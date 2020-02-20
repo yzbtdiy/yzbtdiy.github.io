@@ -14,7 +14,7 @@ CentOS8 发布有段时间了，阿里云官方暂时还没有提供新版镜像
 
 思路是下载 CentOS8 的 vmlinuz 和 initrd.img 文件，然后编辑 grub.cfg 添加启动菜单，网络引导安装系统，通过阿里云提供的 vnc 进行操作，这确实是个安装自定义镜像的好办法，既然提供了脚本，就直接跑脚本吧。
 
-```
+```bash
 wget -qO install.sh http://arloor.com/install-centos8-from-centos7.sh && bash install.sh
 ```
 
