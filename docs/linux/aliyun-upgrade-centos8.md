@@ -20,7 +20,7 @@ wget -qO install.sh http://arloor.com/install-centos8-from-centos7.sh && bash in
 
 在阿里云的 vnc 界面看到的熟悉的 CentOS 安装界面，然后就是正常的安装流程了，折腾了十几分钟，完美安装 CentOS8-Stream（滚动发行版）。
 
-webhook 和 caddy 都是 golang 的可执行文件，二进制文件 + services 文件 + 配置文件，部署完成。
+webhook 和 caddy 都是 golang 编译后的可执行文件，二进制文件 + service 文件 + 配置文件，部署完成。
 
 整个升级过程用了不到半小时，网站在这段时间自然是无法访问了（如果有人访问的话）。
 
