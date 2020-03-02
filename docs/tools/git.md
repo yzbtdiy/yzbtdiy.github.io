@@ -139,4 +139,11 @@ git remote add ALIAS REMORE_URL
 
 # 本地仓库同步到远程仓库（-u 选项可以自动关联，后续可以直接使用 git push）
 git push ALIAS BRANCH
+
+# 从远程仓库获取更新（建议用 git fetch 和 git merge，不建议直接使用 git pull）
+git fetch
+
+# 从远程仓库获取更新并合并分支
+git pull
+git pull REMORE_URL REMOTE_BRANCH:LOCAL_BRANCH
 ```
