@@ -1,0 +1,21 @@
+<div id="aplayer"></div>
+<link rel="stylesheet" href="https://cdn.staticfile.org/aplayer/1.10.1/APlayer.min.css">
+<script src="https://cdn.staticfile.org/aplayer/1.10.1/APlayer.min.js"></script>
+<script>
+  const ap = new APlayer({
+    container: document.getElementById("aplayer"),
+    fixed: true,
+    autoplay: true,
+    volume: 0.32,
+    {# lrcType: 3, #}
+    audio: [
+      {
+        name: "骄傲的少年",
+        artist: "南征北战",
+        url: "https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/mp3/proud-boy-nzbz.mp3",
+        cover: "https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/mp3/proud-boy-nzbz.jpg",
+        {# lrc: "https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/mp3/proud-boy-nzbz.lrc" #}
+      }
+    ]
+  });
+</script>
