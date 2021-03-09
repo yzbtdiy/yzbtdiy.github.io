@@ -27,6 +27,8 @@ tags:
 
 发现目标主机上运行的服务有 ssh, http, samba, mysql, irc 等服务
 
+<!-- more -->
+
 ### 尝试挂载 samba
 
 ```shell
