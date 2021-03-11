@@ -31,12 +31,4 @@ jobs:
           publish_branch: main
           publish_dir: ./public
           force_orphan: true
-          
-      - name: Deploy_Gitee
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.DEPLOY_GITEE }}
-          external_repository: https://gitee.com/yzbtdiy/yzbtdiy.git
-          publish_branch: main
-          publish_dir: ./public
-          force_orphan: true
+
