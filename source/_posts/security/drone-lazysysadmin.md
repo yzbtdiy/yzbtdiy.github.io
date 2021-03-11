@@ -1,5 +1,5 @@
 ---
-title: LazySysAdmin 渗透测试
+title: LazySysAdmin 靶机
 date: 2021-02-26 10:01:48
 categories: security
 tags: 
