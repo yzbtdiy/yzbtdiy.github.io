@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.yzbtdiy.com","root":"/","images":"/images","scheme":"Gemini","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+<meta name="description" content="对象定义在 javascript 中，对象是一系列无序键值对的集合，javascript 中对象的概念类似于 python 中的字典">
+<meta property="og:type" content="article">
+<meta property="og:title" content="javascript 对象">
+<meta property="og:url" content="https://www.yzbtdiy.com/javascript/object.html">
+<meta property="og:site_name" content="YZBTDIY">
+<meta property="og:description" content="对象定义在 javascript 中，对象是一系列无序键值对的集合，javascript 中对象的概念类似于 python 中的字典">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/js/js-prototype.svg">
+<meta property="article:published_time" content="2019-12-27T01:33:50.000Z">
+<meta property="article:modified_time" content="2021-03-12T09:36:37.930Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="object">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/js/js-prototype.svg">
+
+
+<link rel="canonical" href="https://www.yzbtdiy.com/javascript/object.html">
+
+
+<script data-pjax class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>javascript 对象 | YZBTDIY</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">YZBTDIY</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">拥抱开源</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">对象定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="nav-number">2.</span> <span class="nav-text">对象的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E9%9D%A2%E9%87%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">2.1.</span> <span class="nav-text">字面量定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%AE%9A%E4%B9%89"><span class="nav-number">2.2.</span> <span class="nav-text">构造函数定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E5%8E%82%EF%BC%88%E5%87%BD%E6%95%B0%EF%BC%89%E6%A8%A1%E5%BC%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">2.3.</span> <span class="nav-text">工厂（函数）模式定义</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E5%B1%9E%E6%80%A7"><span class="nav-number">3.</span> <span class="nav-text">对象属性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%B1%9E%E6%80%A7"><span class="nav-number">3.1.</span> <span class="nav-text">数据属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Configurable"><span class="nav-number">3.1.1.</span> <span class="nav-text">[[Configurable]]:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Enumerable"><span class="nav-number">3.1.2.</span> <span class="nav-text">[[Enumerable]]:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Writable"><span class="nav-number">3.1.3.</span> <span class="nav-text">[[Writable]]:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Value"><span class="nav-number">3.1.4.</span> <span class="nav-text">[[Value]]:</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7"><span class="nav-number">3.2.</span> <span class="nav-text">访问器属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Configurable-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">[[Configurable]]:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Enumerable-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">[[Enumerable]]:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Get"><span class="nav-number">3.2.3.</span> <span class="nav-text">[[Get]]:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Set"><span class="nav-number">3.2.4.</span> <span class="nav-text">[[Set]]:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E6%93%8D%E4%BD%9C"><span class="nav-number">4.</span> <span class="nav-text">对象操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A2%9E%E5%92%8C%E6%9F%A5"><span class="nav-number">4.1.</span> <span class="nav-text">增和查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4"><span class="nav-number">4.2.</span> <span class="nav-text">删除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%8D%E5%8E%86"><span class="nav-number">4.3.</span> <span class="nav-text">遍历</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">5.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#this"><span class="nav-number">6.</span> <span class="nav-text">this</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#apply-amp-call"><span class="nav-number">6.1.</span> <span class="nav-text">apply &amp; call</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E5%9E%8B%E5%AF%B9%E8%B1%A1%E5%92%8C%E5%8E%9F%E5%9E%8B%E9%93%BE"><span class="nav-number">7.</span> <span class="nav-text">原型对象和原型链</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">84</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">107</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@yzbtdiy.com" title="E-Mail → mailto:admin@yzbtdiy.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yzbtdiy" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/yzbtdiy" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-telegram fa-fw"></i>Telegram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.yzbtdiy.com/javascript/object.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YZBTDIY">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          javascript 对象
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-12-27 09:33:50" itemprop="dateCreated datePublished" datetime="2019-12-27T09:33:50+08:00">2019-12-27</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-03-12 17:36:37" itemprop="dateModified" datetime="2021-03-12T17:36:37+08:00">2021-03-12</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/javascript/" itemprop="url" rel="index"><span itemprop="name">javascript</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="对象定义"><a href="#对象定义" class="headerlink" title="对象定义"></a>对象定义</h2><p>在 javascript 中，对象是一系列无序键值对的集合，javascript 中对象的概念类似于 python 中的字典</p>
+<span id="more"></span>
+
+<h2 id="对象的创建"><a href="#对象的创建" class="headerlink" title="对象的创建"></a>对象的创建</h2><h3 id="字面量定义"><a href="#字面量定义" class="headerlink" title="字面量定义"></a>字面量定义</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token keyword">var</span> obj1 <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+	key1<span class="token operator">:</span> values1<span class="token punctuation">,</span>
+	key2<span class="token operator">:</span> values2<span class="token punctuation">,</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="构造函数定义"><a href="#构造函数定义" class="headerlink" title="构造函数定义"></a>构造函数定义</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token keyword">var</span> obj1 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Object</span><span class="token punctuation">(</span><span class="token punctuation">&#123;</span>
+	key1<span class="token operator">:</span> values1<span class="token punctuation">,</span>
+	key2<span class="token operator">:</span> values2<span class="token punctuation">,</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="工厂（函数）模式定义"><a href="#工厂（函数）模式定义" class="headerlink" title="工厂（函数）模式定义"></a>工厂（函数）模式定义</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token keyword">function</span> <span class="token function">createObject</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">var</span> obj <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Object</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">return</span> obj<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token keyword">var</span> obj1 <span class="token operator">=</span> <span class="token function">createObject</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="对象属性"><a href="#对象属性" class="headerlink" title="对象属性"></a>对象属性</h2><p>ECMAScript 中有两种属性：数据属性和访问器属性</p>
+<h3 id="数据属性"><a href="#数据属性" class="headerlink" title="数据属性"></a>数据属性</h3><p>数据属性包含一个数据值的位置。在这个位置可以读取和写入值。</p>
+<h4 id="Configurable"><a href="#Configurable" class="headerlink" title="[[Configurable]]:"></a><code>[[Configurable]]:</code></h4><ul>
+<li>能否通过 delete 删除属性从而重新定义属性</li>
+<li>能否修改属性的特性或能否把属性修改为访问器属性</li>
+<li>直接在对象上定义的属性的 <code>[[Configurable]]:</code> 值默认为 true</li>
+</ul>
+<h4 id="Enumerable"><a href="#Enumerable" class="headerlink" title="[[Enumerable]]:"></a><code>[[Enumerable]]:</code></h4><ul>
+<li>能否通过 for-in 循环返回属性</li>
+<li>直接在对象上定义的属性的 <code>[[Enumerable]]:</code> 值默认为 true</li>
+</ul>
+<h4 id="Writable"><a href="#Writable" class="headerlink" title="[[Writable]]:"></a><code>[[Writable]]:</code></h4><ul>
+<li>能够修改属性的值</li>
+<li>直接在对象上定义的属性的 <code>[[Writable]]:</code> 值默认为 true</li>
+</ul>
+<h4 id="Value"><a href="#Value" class="headerlink" title="[[Value]]:"></a><code>[[Value]]:</code></h4><ul>
+<li>包含这个属性的数据值</li>
+<li>读取和写入属性值均为操作 <code>[[Value]]:</code> 的值，默认值为 undefined</li>
+</ul>
+<h3 id="访问器属性"><a href="#访问器属性" class="headerlink" title="访问器属性"></a>访问器属性</h3><ul>
+<li>访问器属性不能直接定义，必须使用 <code>Object.defineProperty()</code> 来定义</li>
+</ul>
+<h4 id="Configurable-1"><a href="#Configurable-1" class="headerlink" title="[[Configurable]]:"></a><code>[[Configurable]]:</code></h4><ul>
+<li>能否通过 delete 删除属性从而重新定义属性</li>
+<li>能否修改属性的特性，或者能否把属性修改为数据属性</li>
+<li>直接在对象上定义的属性 <code>[[Configurable]]:</code> 值默认为 true</li>
+</ul>
+<h4 id="Enumerable-1"><a href="#Enumerable-1" class="headerlink" title="[[Enumerable]]:"></a><code>[[Enumerable]]:</code></h4><ul>
+<li>能否通过 for-in 循环返回属性</li>
+<li>直接在对象上定义的属性 <code>[[Enumerable]]:</code> 值默认为 true</li>
+</ul>
+<h4 id="Get"><a href="#Get" class="headerlink" title="[[Get]]:"></a><code>[[Get]]:</code></h4><ul>
+<li>读取属性时调用的函数，默认值为 undefined</li>
+</ul>
+<h4 id="Set"><a href="#Set" class="headerlink" title="[[Set]]:"></a><code>[[Set]]:</code></h4><ul>
+<li>写入属性时定义的函数，默认值为 undefined</li>
+</ul>
+<h2 id="对象操作"><a href="#对象操作" class="headerlink" title="对象操作"></a>对象操作</h2><h3 id="增和查"><a href="#增和查" class="headerlink" title="增和查"></a>增和查</h3><ul>
+<li>通过 <code>对象.属性</code> 和 <code>对象[属性]</code> 都可以操作对象，有则改之，无则增加</li>
+<li>特定条件下必须使用 <code>[]</code>：<ul>
+<li>属性名不符合标识符规范</li>
+<li>属性名是变量 </li>
+</ul>
+</li>
+</ul>
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token keyword">delete</span> obj1<span class="token punctuation">.</span>key<span class="token punctuation">;</span>
+<span class="token keyword">delete</span> obj1<span class="token punctuation">[</span>key<span class="token punctuation">]</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<ul>
+<li>使用 <code>delete</code> 关键字删除对象中的键值对</li>
+</ul>
+<h3 id="遍历"><a href="#遍历" class="headerlink" title="遍历"></a>遍历</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">var</span> key <span class="token keyword">in</span> obj1<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> obj1<span class="token punctuation">[</span>key<span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>对象的遍历使用 <code>for ... in ...</code></li>
+<li>数组和函数也可以作为对象使用，添加属性值</li>
+<li>数组使用 <code>for ... in ...</code> 遍历会将索引作为属性，索引值作为属性值</li>
+</ul>
+<h2 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h2><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token keyword">function</span> <span class="token function">Person</span><span class="token punctuation">(</span><span class="token parameter">name<span class="token punctuation">,</span> age<span class="token punctuation">,</span> gender</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">this</span><span class="token punctuation">.</span>name <span class="token operator">=</span> name<span class="token punctuation">;</span>
+	<span class="token keyword">this</span><span class="token punctuation">.</span>age <span class="token operator">=</span> age<span class="token punctuation">;</span>
+	<span class="token keyword">this</span><span class="token punctuation">.</span>gender <span class="token operator">=</span> gender<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token keyword">var</span> jsCreater <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Person</span><span class="token punctuation">(</span><span class="token string">"Brendan Eich"</span><span class="token punctuation">,</span> <span class="token number">58</span><span class="token punctuation">,</span> <span class="token string">"male"</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>javascript 使用构造函数（constructor）作为对象的模板，用来生成具有相同基本结构的对象</li>
+<li>构造函数的函数名通常使用大驼峰方式命名，以便于区分</li>
+<li>ES6 中引入 class</li>
+<li>函数可以作为普通函数使用，也可以作为函数对象使用（构造函数属于函数对象）</li>
+<li>作为普通函数使用：  <ul>
+<li>调用时不使用 new 关键字，函数内部 this 代表 window 对象</li>
+<li>函数调用相当于在 window 对象中增加了一些属性和值</li>
+<li>有 return 函数表达式返回对应的值，无 return 返回 undefined</li>
+</ul>
+</li>
+<li>作为构造函数使用：<ul>
+<li>务必使用 new 关键字，函数内部 this 代表实例化的对象</li>
+<li>函数调用相当于在实例化后的对象内部添加了一些属性和值</li>
+<li>无 return 或者 return 值为基本数据类型，函数表达式返回值为示例化后的对象</li>
+<li>return 值为对象数据类型，函数表达式返回值为 return 对象的数据</li>
+</ul>
+</li>
+</ul>
+<h2 id="this"><a href="#this" class="headerlink" title="this"></a>this</h2><ul>
+<li>this 本质是一个变量，它指向函数的执行者：<ul>
+<li>在函数中 this 指向 window 对象（浏览器窗口对象）</li>
+<li>在方法中 this 指向方法的对象（方法是指对象内属性的属性值）</li>
+<li>在事件处理（回调）函数中 this 指向发生事件的元素</li>
+<li>在构造函数中 this 指向准备实例化的对象</li>
+</ul>
+</li>
+</ul>
+<h3 id="apply-amp-call"><a href="#apply-amp-call" class="headerlink" title="apply &amp; call"></a>apply &amp; call</h3><ul>
+<li><code>apply</code> 和 <code>call</code> 可以改变函数运行时的上下文（context），也就是改变函数内部 this 的指向</li>
+<li><code>apply</code> 和 <code>call</code>  的第一个参数为 this 的新</li>
+</ul>
+<h2 id="原型对象和原型链"><a href="#原型对象和原型链" class="headerlink" title="原型对象和原型链"></a>原型对象和原型链</h2><ul>
+<li>javascript 的继承是通过原型对象（prototype）实现的</li>
+<li>原型对象的所有属性和方法，都能被实例对象共享，可以减少内存占用</li>
+<li>原型对象分为显示原型对象和隐式原型对象<ul>
+<li>显示原型对象是函数对象下的 <code>prototype</code> 对象，通常用来操作原型对象</li>
+<li>隐式原型对象是实例对象下的 <code>__proto__</code> 对象，通产用来查找原型对象</li>
+<li><code>prototype</code> 和 <code>__proto__</code> 在内存中引用地址相同</li>
+</ul>
+</li>
+</ul>
+<p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/js/js-prototype.svg"></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/object/" rel="tag"># object</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/javascript/function.html" rel="prev" title="javascript 函数">
+                  <i class="fa fa-chevron-left"></i> javascript 函数
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/javascript/built-in-object-methods.html" rel="next" title="javascript 内置方法">
+                  javascript 内置方法 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">晋 ICP 备 17000349 号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.4.0/pjax.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '.page-configurations',
+    '.main-inner',
+    '.post-toc-wrap',
+    '.languages',
+    '.pjax'
+  ],
+  analytics: false,
+  cacheBust: false,
+  scrollRestoration: false,
+  scrollTo: !CONFIG.bookmark.enable
+});
+
+document.addEventListener('pjax:success', () => {
+  pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  const hasTOC = document.querySelector('.post-toc');
+  document.querySelector('.sidebar-inner').classList.toggle('sidebar-nav-active', hasTOC);
+  document.querySelector(hasTOC ? '.sidebar-nav-toc' : '.sidebar-nav-overview').click();
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+    <div class="pjax">
+
+
+    </div>
+</body>
+</html>

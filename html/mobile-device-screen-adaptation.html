@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.yzbtdiy.com","root":"/","images":"/images","scheme":"Gemini","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+<meta name="description" content="视口 视觉视口 (visual viewport)  视觉视口默认等于当前浏览器的窗口大小  通过 window.innerWidth 或者 window.visualViewport.width 获取大小   布局视口 (layout viewport)  布局视口是网页布局的基准， 大部分为移动设备布局视口默认值为 980px 布局视口通过 document.documentElement.c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="移动端屏幕适配">
+<meta property="og:url" content="https://www.yzbtdiy.com/html/mobile-device-screen-adaptation.html">
+<meta property="og:site_name" content="YZBTDIY">
+<meta property="og:description" content="视口 视觉视口 (visual viewport)  视觉视口默认等于当前浏览器的窗口大小  通过 window.innerWidth 或者 window.visualViewport.width 获取大小   布局视口 (layout viewport)  布局视口是网页布局的基准， 大部分为移动设备布局视口默认值为 980px 布局视口通过 document.documentElement.c">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-05-13T12:24:29.000Z">
+<meta property="article:modified_time" content="2021-03-12T09:36:37.930Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="mobile">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.yzbtdiy.com/html/mobile-device-screen-adaptation.html">
+
+
+<script data-pjax class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>移动端屏幕适配 | YZBTDIY</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">YZBTDIY</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">拥抱开源</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E5%8F%A3"><span class="nav-number">1.</span> <span class="nav-text">视口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#meta-viewport"><span class="nav-number">1.1.</span> <span class="nav-text">meta viewport</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%83%8F%E7%B4%A0%E6%AF%94"><span class="nav-number">2.</span> <span class="nav-text">像素比</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%82%E9%85%8D%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">适配方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#viewport-%E9%80%82%E9%85%8D"><span class="nav-number">3.1.</span> <span class="nav-text">viewport 适配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rem-%E9%80%82%E9%85%8D"><span class="nav-number">3.2.</span> <span class="nav-text">rem 适配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vw-%E9%80%82%E9%85%8D"><span class="nav-number">3.3.</span> <span class="nav-text">vw 适配</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">84</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">107</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@yzbtdiy.com" title="E-Mail → mailto:admin@yzbtdiy.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yzbtdiy" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/yzbtdiy" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-telegram fa-fw"></i>Telegram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.yzbtdiy.com/html/mobile-device-screen-adaptation.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YZBTDIY">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          移动端屏幕适配
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-05-13 20:24:29" itemprop="dateCreated datePublished" datetime="2020-05-13T20:24:29+08:00">2020-05-13</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-03-12 17:36:37" itemprop="dateModified" datetime="2021-03-12T17:36:37+08:00">2021-03-12</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/html/" itemprop="url" rel="index"><span itemprop="name">html</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="视口"><a href="#视口" class="headerlink" title="视口"></a>视口</h2><ul>
+<li><p>视觉视口 (visual viewport)</p>
+<ul>
+<li>视觉视口默认等于当前浏览器的窗口大小 </li>
+<li>通过 <code>window.innerWidth</code> 或者 <code>window.visualViewport.width</code> 获取大小</li>
+</ul>
+</li>
+<li><p>布局视口 (layout viewport)</p>
+<ul>
+<li>布局视口是网页布局的基准， 大部分为移动设备布局视口默认值为 980px</li>
+<li>布局视口通过 <code>document.documentElement.clientWidth</code> 获取大小</li>
+</ul>
+</li>
+<li><p>理想视口 (ideal viewport)</p>
+<ul>
+<li>理想视口是页面在移动端展示的理想大小, 及布局视口和设备宽度一样</li>
+<li>通过 <code>window.screen.width</code> 获取大小</li>
+</ul>
+</li>
+</ul>
+<span id="more"></span>
+
+<h3 id="meta-viewport"><a href="#meta-viewport" class="headerlink" title="meta viewport"></a>meta viewport</h3><pre class="line-numbers language-html" data-language="html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span>
+  <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>viewport<span class="token punctuation">"</span></span>
+  <span class="token attr-name">content</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0<span class="token punctuation">"</span></span>
+<span class="token punctuation">/></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li><code>width</code>：布局视口宽度, 可以设置为固定的值或者 <code>device-width</code>（设备宽度）</li>
+<li><code>initial-scale</code>：页面的初始缩放系数 (缩放系数 = 理想视口宽度 / 视觉视口宽度)</li>
+<li><code>minimum-scale</code>：最小的缩放系数</li>
+<li><code>maximum-scale</code>：最大的缩放系数</li>
+<li><code>user-scalable</code>：用户缩放, no 为禁用用户缩放</li>
+<li><code>width</code> 和 <code>initial-scale</code> 都会初始化布局视口, 浏览器取较大值</li>
+</ul>
+<h2 id="像素比"><a href="#像素比" class="headerlink" title="像素比"></a>像素比</h2><ul>
+<li>物理像素 (physical pixel)<ul>
+<li>屏幕显示的最小单元, 可以单独设置颜色及亮度</li>
+</ul>
+</li>
+<li>设备独立像素 (density-indenpendent pixel)<ul>
+<li>逻辑像素, css 设置的像素为设备独立像素</li>
+</ul>
+</li>
+<li>设备像素比 (device pixel ratio)<ul>
+<li>设备像素比 (dpr) = 物理像素 / 设备独立像素</li>
+<li>dpr 大于 1 的 retina 屏幕上 1px 会变粗</li>
+</ul>
+</li>
+</ul>
+<h2 id="适配方案"><a href="#适配方案" class="headerlink" title="适配方案"></a>适配方案</h2><h3 id="viewport-适配"><a href="#viewport-适配" class="headerlink" title="viewport 适配"></a>viewport 适配</h3><ul>
+<li>通过改变页面的缩放系数来适配页面</li>
+</ul>
+<pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token punctuation">(</span><span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">let</span> visualWidth <span class="token operator">=</span> <span class="token number">750</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> scaleSize <span class="token operator">=</span> document<span class="token punctuation">.</span>documentElement<span class="token punctuation">.</span>clientWidth <span class="token operator">/</span> visualWidth<span class="token punctuation">;</span>
+  <span class="token keyword">let</span> metaNode <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">"meta[name=viewport]"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  metaNode<span class="token punctuation">.</span>content <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">initial-scale=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">$&#123;</span>scaleSize<span class="token interpolation-punctuation punctuation">&#125;</span></span><span class="token string">,user-scalable=no,minimum-scale=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">$&#123;</span>scaleSize<span class="token interpolation-punctuation punctuation">&#125;</span></span><span class="token string">,maximum-scale=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">$&#123;</span>scaleSize<span class="token interpolation-punctuation punctuation">&#125;</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="rem-适配"><a href="#rem-适配" class="headerlink" title="rem 适配"></a>rem 适配</h3><ul>
+<li>rem 适配需要设置 <code>initial-scale = 1</code></li>
+<li>HTML 根标签的 font-size 属性值为 1rem 的大小</li>
+<li>布局视口的宽设置为 16 份，每份的宽为 1rem</li>
+<li>将设计图的位图像素分为 16 份，每份为 1rem 对应的位图像素</li>
+<li>设计图对应元素的位图像素宽除以 1rem 的位图像素宽，得到该对应元素 rem 值</li>
+</ul>
+<pre class="line-numbers language-sass" data-language="sass"><code class="language-sass"><span class="token variable-line"><span class="token variable">$phoneWidth</span> <span class="token punctuation">:</span> 750;    <span class="token operator">/</span><span class="token operator">/</span>设计稿宽度</span>
+<span class="token atrule-line"><span class="token atrule">@function</span> px2rem( $width )&#123;</span>
+<span class="token atrule-line">  <span class="token atrule">@return</span> $width / $phoneWidth * 16rem;</span>
+<span class="token selector">&#125;</span>
+
+<span class="token selector">div &#123;</span>
+<span class="token property-line">  <span class="token property">font-size</span><span class="token punctuation">:</span> px2rem(XXpx);</span>
+<span class="token selector">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token punctuation">(</span><span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  document<span class="token punctuation">.</span>documentElement<span class="token punctuation">.</span>style<span class="token punctuation">.</span>fontSize <span class="token operator">=</span> document<span class="token punctuation">.</span>documentElement<span class="token punctuation">.</span>clientWidth <span class="token operator">/</span> <span class="token number">16</span> <span class="token operator">+</span> <span class="token string">'px'</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>可以先通过 px 布局，打包时用 pxtorem 库转化为 rem 布局</li>
+</ul>
+<h3 id="vw-适配"><a href="#vw-适配" class="headerlink" title="vw 适配"></a>vw 适配</h3><ul>
+<li>将视口宽度 <code>window.innerWidth</code> 和视口高度 <code>window.innerHeight</code> 等分为 100 份</li>
+<li>vw : 1vw 为视口宽度的 1%</li>
+<li>vh : 1vh 为视口高度的 1%</li>
+<li>vmin : vw 和 vh 中的较小值</li>
+<li>vmax : 选取 vw 和 vh 中的较大值</li>
+<li>通过 vw, vh 等相对单位进行布局实现适配</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mobile/" rel="tag"># mobile</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/tools/scoop.html" rel="prev" title="Windows 包管理工具 Scoop">
+                  <i class="fa fa-chevron-left"></i> Windows 包管理工具 Scoop
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/tools/qun-qzone.html" rel="next" title="QQ 群空间 Hosts 备忘">
+                  QQ 群空间 Hosts 备忘 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">晋 ICP 备 17000349 号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.4.0/pjax.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '.page-configurations',
+    '.main-inner',
+    '.post-toc-wrap',
+    '.languages',
+    '.pjax'
+  ],
+  analytics: false,
+  cacheBust: false,
+  scrollRestoration: false,
+  scrollTo: !CONFIG.bookmark.enable
+});
+
+document.addEventListener('pjax:success', () => {
+  pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  const hasTOC = document.querySelector('.post-toc');
+  document.querySelector('.sidebar-inner').classList.toggle('sidebar-nav-active', hasTOC);
+  document.querySelector(hasTOC ? '.sidebar-nav-toc' : '.sidebar-nav-overview').click();
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+    <div class="pjax">
+
+
+    </div>
+</body>
+</html>

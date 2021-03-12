@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.yzbtdiy.com","root":"/","images":"/images","scheme":"Gemini","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+<meta name="description" content="简介 PXE是基于 server&#x2F;client 模式的技术，让客户端从远程服务器下载启动镜像，从而实现网络启动。客户端要求服务器通过 DHCP 分配 IP 地址，再通过 TFTP 下载启动镜像。 Kickstart 将安装过程中需要手动设置的参数保存为应答文件，通过读取应答文件实现无人值守安装。 安装源可以通过 FTP，NFS，HTTP 等提供。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PXE &amp; Kickstart 安装 CentOS7">
+<meta property="og:url" content="https://www.yzbtdiy.com/linux/pxe-kickstart.html">
+<meta property="og:site_name" content="YZBTDIY">
+<meta property="og:description" content="简介 PXE是基于 server&#x2F;client 模式的技术，让客户端从远程服务器下载启动镜像，从而实现网络启动。客户端要求服务器通过 DHCP 分配 IP 地址，再通过 TFTP 下载启动镜像。 Kickstart 将安装过程中需要手动设置的参数保存为应答文件，通过读取应答文件实现无人值守安装。 安装源可以通过 FTP，NFS，HTTP 等提供。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/linux/pxe-desc.svg">
+<meta property="article:published_time" content="2019-05-09T01:44:49.000Z">
+<meta property="article:modified_time" content="2021-03-12T09:36:37.930Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="pxe">
+<meta property="article:tag" content="kickstart">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/linux/pxe-desc.svg">
+
+
+<link rel="canonical" href="https://www.yzbtdiy.com/linux/pxe-kickstart.html">
+
+
+<script data-pjax class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>PXE & Kickstart 安装 CentOS7 | YZBTDIY</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">YZBTDIY</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">拥抱开源</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E8%BD%AF%E4%BB%B6%E5%8C%85"><span class="nav-number">2.</span> <span class="nav-text">安装软件包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-dhcp"><span class="nav-number">3.</span> <span class="nav-text">配置 dhcp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%97%AD%E9%98%B2%E7%81%AB%E5%A2%99%E5%92%8C-SELinux"><span class="nav-number">4.</span> <span class="nav-text">关闭防火墙和 SELinux</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-tftp"><span class="nav-number">5.</span> <span class="nav-text">配置 tftp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-pxe-%E5%BC%95%E5%AF%BC%E6%96%87%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">配置 pxe 引导文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87-Kickstart-%E6%97%A0%E4%BA%BA%E5%80%BC%E5%AE%88%E6%96%87%E4%BB%B6"><span class="nav-number">7.</span> <span class="nav-text">准备 Kickstart 无人值守文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8-apache%EF%BC%8C%E6%B5%8B%E8%AF%95%E8%83%BD%E5%90%A6%E8%AE%BF%E9%97%AE%E5%AE%89%E8%A3%85%E6%BA%90%E5%92%8C-ks-%E6%96%87%E4%BB%B6"><span class="nav-number">8.</span> <span class="nav-text">启动 apache，测试能否访问安装源和 ks 文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A3%B8%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%BC%95%E5%AF%BC%E5%AE%89%E8%A3%85%E7%B3%BB%E7%BB%9F"><span class="nav-number">9.</span> <span class="nav-text">裸机网络引导安装系统</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">84</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">107</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@yzbtdiy.com" title="E-Mail → mailto:admin@yzbtdiy.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yzbtdiy" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/yzbtdiy" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-telegram fa-fw"></i>Telegram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.yzbtdiy.com/linux/pxe-kickstart.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YZBTDIY">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PXE & Kickstart 安装 CentOS7
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-05-09 09:44:49" itemprop="dateCreated datePublished" datetime="2019-05-09T09:44:49+08:00">2019-05-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-03-12 17:36:37" itemprop="dateModified" datetime="2021-03-12T17:36:37+08:00">2021-03-12</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/linux/pxe-desc.svg"></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><ul>
+<li>PXE是基于 server/client 模式的技术，让客户端从远程服务器下载启动镜像，从而实现网络启动。客户端要求服务器通过 DHCP 分配 IP 地址，再通过 TFTP 下载启动镜像。</li>
+<li>Kickstart 将安装过程中需要手动设置的参数保存为应答文件，通过读取应答文件实现无人值守安装。</li>
+<li>安装源可以通过 FTP，NFS，HTTP 等提供。</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="安装软件包"><a href="#安装软件包" class="headerlink" title="安装软件包"></a>安装软件包</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># yum -y install tftp-server dhcp syslinux httpd</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="配置-dhcp"><a href="#配置-dhcp" class="headerlink" title="配置 dhcp"></a>配置 dhcp</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/dhcp/dhcpd.conf</span>
+subnet <span class="token number">172.25</span>.254.0 netmask <span class="token number">255.255</span>.255.0 <span class="token punctuation">&#123;</span>
+  range <span class="token number">172.25</span>.254.1 <span class="token number">172.25</span>.254.250<span class="token punctuation">;</span>
+  option routers <span class="token number">172.25</span>.254.254<span class="token punctuation">;</span>
+  default-lease-time <span class="token number">600</span><span class="token punctuation">;</span>
+  max-lease-time <span class="token number">7200</span><span class="token punctuation">;</span>
+  filename <span class="token string">"/pxelinux.0"</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart dhcpd</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable dhcpd</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="关闭防火墙和-SELinux"><a href="#关闭防火墙和-SELinux" class="headerlink" title="关闭防火墙和 SELinux"></a>关闭防火墙和 SELinux</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl stop firewalld</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl disable firewalld</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># setenforce 0</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/selinux/config</span>
+<span class="token assign-left variable">SELINUX</span><span class="token operator">=</span>disabled<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="配置-tftp"><a href="#配置-tftp" class="headerlink" title="配置 tftp"></a>配置 tftp</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/xinetd.d/tftp</span>
+<span class="token function">service</span> tftp
+<span class="token punctuation">&#123;</span>
+        socket_type             <span class="token operator">=</span> dgram
+        protocol                <span class="token operator">=</span> udp
+        <span class="token function">wait</span>                    <span class="token operator">=</span> <span class="token function">yes</span>
+        user                    <span class="token operator">=</span> root
+        server                  <span class="token operator">=</span> /usr/sbin/in.tftpd
+        server_args             <span class="token operator">=</span> -s /var/lib/tftpboot
+        disable                 <span class="token operator">=</span> no
+        per_source              <span class="token operator">=</span> <span class="token number">11</span>
+        cps                     <span class="token operator">=</span> <span class="token number">100</span> <span class="token number">2</span>
+        flags                   <span class="token operator">=</span> IPv4
+<span class="token punctuation">&#125;</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart tftp</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable tftp</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="配置-pxe-引导文件"><a href="#配置-pxe-引导文件" class="headerlink" title="配置 pxe 引导文件"></a>配置 pxe 引导文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># cp /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># mkdir /var/www/html/cdrom</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># mount /dev/sr0 /var/www/html/cdrom</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># cp /var/www/html/cdrom/isolinux/&#123;vmlinuz,initrd.img&#125; /var/lib/tftpboot/</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># mkdir /var/lib/tftpboot/pxelinux.cfg</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># cp /var/www/html/cdrom/isolinux/isolinux.cfg /var/lib/tftpboot/pxelinux.cfg/default</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># vim /var/lib/tftpboot/pxelinux.cfg/default</span>
+default linux
+<span class="token punctuation">..</span>. <span class="token punctuation">..</span>.
+label linux
+  menu label ^Install CentOS <span class="token number">7</span>
+  kernel vmlinuz
+  append <span class="token assign-left variable">initrd</span><span class="token operator">=</span>initrd.img inst.stage2<span class="token operator">=</span>http://172.25.254.254/cdrom <span class="token assign-left variable">ks</span><span class="token operator">=</span>http://172.25.254.254/ks.cfg quiet
+<span class="token punctuation">..</span>. <span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="准备-Kickstart-无人值守文件"><a href="#准备-Kickstart-无人值守文件" class="headerlink" title="准备 Kickstart 无人值守文件"></a>准备 Kickstart 无人值守文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># cp anaconda-ks.cfg /var/www/html/ks.cfg</span>
+<span class="token comment">#version=DEVEL</span>
+<span class="token comment"># System authorization information</span>
+auth --enableshadow --passalgo<span class="token operator">=</span>sha512
+<span class="token comment"># Use CDROM installation media</span>
+url --url<span class="token operator">=</span>http://172.25.254.254/cdrom
+<span class="token comment"># Use graphical install</span>
+graphical
+<span class="token comment"># Run the Setup Agent on first boot</span>
+firstboot --enable
+ignoredisk --only-use<span class="token operator">=</span>sda
+<span class="token comment"># Keyboard layouts</span>
+keyboard --vckeymap<span class="token operator">=</span>us --xlayouts<span class="token operator">=</span><span class="token string">'us'</span>
+<span class="token comment"># System language</span>
+lang en_US.UTF-8
+
+<span class="token comment"># Network information</span>
+network  --bootproto<span class="token operator">=</span>dhcp --device<span class="token operator">=</span>ens33 --onboot<span class="token operator">=</span>off --ipv6<span class="token operator">=</span>auto --no-activate
+network  --hostname<span class="token operator">=</span>localhost.localdomain
+
+<span class="token comment"># Root password</span>
+rootpw --iscrypted <span class="token variable">$6</span><span class="token variable">$BJfADb7EusYxHOyu</span><span class="token variable">$aKf2OgGT3qSOKdwgvUd8y3ZI4T4ZWe40DZ4ZfN4PEA8ceFuuauBGVUsqM12RYu36w8SwdKzjbXz2kt</span>.NdxSmn.
+<span class="token comment"># System services</span>
+services --disabled<span class="token operator">=</span><span class="token string">"chronyd"</span>
+<span class="token comment"># System timezone</span>
+timezone Asia/Shanghai --isUtc --nontp
+<span class="token comment"># System bootloader configuration</span>
+bootloader --append<span class="token operator">=</span><span class="token string">" crashkernel=auto"</span> --location<span class="token operator">=</span>mbr --boot-drive<span class="token operator">=</span>sda
+autopart --type<span class="token operator">=</span>lvm
+<span class="token comment"># Partition clearing information</span>
+clearpart --none --initlabel
+
+%packages
+@^minimal
+@core
+kexec-tools
+
+%end
+
+%addon com_redhat_kdump --enable --reserve-mb<span class="token operator">=</span><span class="token string">'auto'</span>
+
+%end
+
+%anaconda
+pwpolicy root --minlen<span class="token operator">=</span><span class="token number">6</span> --minquality<span class="token operator">=</span><span class="token number">1</span> --notstrict --nochanges --notempty
+pwpolicy user --minlen<span class="token operator">=</span><span class="token number">6</span> --minquality<span class="token operator">=</span><span class="token number">1</span> --notstrict --nochanges --emptyok
+pwpolicy luks --minlen<span class="token operator">=</span><span class="token number">6</span> --minquality<span class="token operator">=</span><span class="token number">1</span> --notstrict --nochanges --notempty
+%end<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="启动-apache，测试能否访问安装源和-ks-文件"><a href="#启动-apache，测试能否访问安装源和-ks-文件" class="headerlink" title="启动 apache，测试能否访问安装源和 ks 文件"></a>启动 apache，测试能否访问安装源和 ks 文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart httpd</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable httpd</span>
+浏览器访问 <span class="token number">172.25</span>.254.254/cdrom 和 <span class="token number">172.25</span>.254.254/ks.cfg<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="裸机网络引导安装系统"><a href="#裸机网络引导安装系统" class="headerlink" title="裸机网络引导安装系统"></a>裸机网络引导安装系统</h2>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pxe/" rel="tag"># pxe</a>
+              <a href="/tags/kickstart/" rel="tag"># kickstart</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/linux/rhel8-release.html" rel="prev" title="红帽 rhel8 发布">
+                  <i class="fa fa-chevron-left"></i> 红帽 rhel8 发布
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/linux/elrepo-update-kernel.html" rel="next" title="Elrepo 源升级 CentOS7/RHEL7 内核">
+                  Elrepo 源升级 CentOS7/RHEL7 内核 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">晋 ICP 备 17000349 号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.4.0/pjax.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '.page-configurations',
+    '.main-inner',
+    '.post-toc-wrap',
+    '.languages',
+    '.pjax'
+  ],
+  analytics: false,
+  cacheBust: false,
+  scrollRestoration: false,
+  scrollTo: !CONFIG.bookmark.enable
+});
+
+document.addEventListener('pjax:success', () => {
+  pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  const hasTOC = document.querySelector('.post-toc');
+  document.querySelector('.sidebar-inner').classList.toggle('sidebar-nav-active', hasTOC);
+  document.querySelector(hasTOC ? '.sidebar-nav-toc' : '.sidebar-nav-overview').click();
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+    <div class="pjax">
+
+
+    </div>
+</body>
+</html>

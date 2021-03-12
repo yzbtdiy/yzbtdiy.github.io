@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.yzbtdiy.com","root":"/","images":"/images","scheme":"Gemini","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+<meta name="description" content="canvas &lt;canvas&gt; 标签是一个图形容器，需要使用 javascript 来绘制图形 &lt;canvas&gt; 标签是 inline-block 元素，标签内部是浏览器不支持 &lt;canvas&gt; 标签时显示的内容 &lt;canvas&gt; 元素默认宽度 300px，默认高度 150px，只能通过标签属性设置宽高，不能通过 css 设置（会改变像素的宽高比），">
+<meta property="og:type" content="article">
+<meta property="og:title" content="canvas 画布">
+<meta property="og:url" content="https://www.yzbtdiy.com/html/canvas.html">
+<meta property="og:site_name" content="YZBTDIY">
+<meta property="og:description" content="canvas &lt;canvas&gt; 标签是一个图形容器，需要使用 javascript 来绘制图形 &lt;canvas&gt; 标签是 inline-block 元素，标签内部是浏览器不支持 &lt;canvas&gt; 标签时显示的内容 &lt;canvas&gt; 元素默认宽度 300px，默认高度 150px，只能通过标签属性设置宽高，不能通过 css 设置（会改变像素的宽高比），">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-02-11T07:00:26.000Z">
+<meta property="article:modified_time" content="2021-03-12T09:36:37.930Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="canvas">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.yzbtdiy.com/html/canvas.html">
+
+
+<script data-pjax class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>canvas 画布 | YZBTDIY</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">YZBTDIY</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">拥抱开源</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#canvas"><span class="nav-number">1.</span> <span class="nav-text">canvas</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA-canvas"><span class="nav-number">1.1.</span> <span class="nav-text">创建 canvas</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%98%E5%88%B6%E5%9B%BE%E5%BD%A2"><span class="nav-number">2.</span> <span class="nav-text">绘制图形</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%85%E7%A9%BA%E7%94%BB%E5%B8%83"><span class="nav-number">2.1.</span> <span class="nav-text">清空画布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%9C%E8%89%B2"><span class="nav-number">2.2.</span> <span class="nav-text">颜色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E5%9E%8B%EF%BC%88Line-styles%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">线型（Line styles）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%98%E5%88%B6%E7%BA%BF%E6%AE%B5"><span class="nav-number">2.4.</span> <span class="nav-text">绘制线段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%98%E5%88%B6%E7%9F%A9%E5%BD%A2"><span class="nav-number">2.5.</span> <span class="nav-text">绘制矩形</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%98%E5%88%B6%E5%9C%86"><span class="nav-number">2.6.</span> <span class="nav-text">绘制圆</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9C%86%E5%BC%A7"><span class="nav-number">2.6.1.</span> <span class="nav-text">圆弧</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9C%86"><span class="nav-number">2.6.2.</span> <span class="nav-text">圆</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E5%BD%A2%E5%8F%98%E6%8D%A2"><span class="nav-number">3.</span> <span class="nav-text">图形变换</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%8D%E7%A7%BB"><span class="nav-number">3.1.</span> <span class="nav-text">位移</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%8B%E8%BD%AC"><span class="nav-number">3.2.</span> <span class="nav-text">旋转</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%A9%E6%94%BE"><span class="nav-number">3.3.</span> <span class="nav-text">缩放</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">84</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">107</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@yzbtdiy.com" title="E-Mail → mailto:admin@yzbtdiy.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yzbtdiy" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/yzbtdiy" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-telegram fa-fw"></i>Telegram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.yzbtdiy.com/html/canvas.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YZBTDIY">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          canvas 画布
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-02-11 15:00:26" itemprop="dateCreated datePublished" datetime="2020-02-11T15:00:26+08:00">2020-02-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-03-12 17:36:37" itemprop="dateModified" datetime="2021-03-12T17:36:37+08:00">2021-03-12</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/html/" itemprop="url" rel="index"><span itemprop="name">html</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="canvas"><a href="#canvas" class="headerlink" title="canvas"></a>canvas</h2><ul>
+<li><code>&lt;canvas&gt;</code> 标签是一个图形容器，需要使用 javascript 来绘制图形</li>
+<li><code>&lt;canvas&gt;</code> 标签是 <code>inline-block</code> 元素，标签内部是浏览器不支持 <code>&lt;canvas&gt;</code> 标签时显示的内容</li>
+<li><code>&lt;canvas&gt;</code> 元素默认宽度 300px，默认高度 150px，只能通过标签属性设置宽高，不能通过 css 设置（会改变像素的宽高比），不需要写单位，以像素计数</li>
+</ul>
+<span id="more"></span>
+
+<h3 id="创建-canvas"><a href="#创建-canvas" class="headerlink" title="创建 canvas"></a>创建 canvas</h3><p><strong>html 创建元素</strong></p>
+<pre class="line-numbers language-html" data-language="html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>canvas</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>theCanvas<span class="token punctuation">"</span></span> <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>400<span class="token punctuation">"</span></span> <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>400<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    您的浏览器不支持canvas，推荐使用 Chrome 或 Firefox 等现代浏览器
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>canvas</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-css" data-language="css"><code class="language-css"><span class="token selector">#theCanvas</span> <span class="token punctuation">&#123;</span>
+    <span class="token property">background-color</span><span class="token punctuation">:</span> yellowgreen<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p><strong>获取 js 对象</strong></p>
+<pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token comment">//获取画布</span>
+<span class="token keyword">let</span> myCanvas <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">"theCanvas"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//获取渲染上下文（The rendering context），用来绘制或处理展示内容</span>
+<span class="token keyword">let</span> painting <span class="token operator">=</span> myCanvas<span class="token punctuation">.</span><span class="token function">getContext</span><span class="token punctuation">(</span><span class="token string">"2d"</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="绘制图形"><a href="#绘制图形" class="headerlink" title="绘制图形"></a>绘制图形</h2><ul>
+<li><code>fill</code> 与填充有关</li>
+<li><code>storke</code> 与轮廓有关</li>
+<li><code>rect</code> 与矩形有关</li>
+<li>在原有 <code>fill</code> 基础上，<code>stroke</code> 里外均等分布</li>
+</ul>
+<h3 id="清空画布"><a href="#清空画布" class="headerlink" title="清空画布"></a>清空画布</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js">painting<span class="token punctuation">.</span><span class="token function">clearRect</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> myCanvas<span class="token punctuation">.</span>width<span class="token punctuation">,</span> myCanvas<span class="token punctuation">.</span>height<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//清除区域起始行坐标，清除区域起始纵坐标，清除宽区域度，清除区域高度</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="颜色"><a href="#颜色" class="headerlink" title="颜色"></a>颜色</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token comment">//填充颜色，可以使用颜色单词，rgb，rgba，#HEX</span>
+painting<span class="token punctuation">.</span>fillStyle <span class="token operator">=</span> <span class="token string">"green"</span><span class="token punctuation">;</span>
+<span class="token comment">//轮廓颜色</span>
+painting<span class="token punctuation">.</span>strokeStyle <span class="token operator">=</span> <span class="token string">"red"</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="线型（Line-styles）"><a href="#线型（Line-styles）" class="headerlink" title="线型（Line styles）"></a>线型（Line styles）</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token comment">//线条粗细</span>
+painting<span class="token punctuation">.</span>lineWidth <span class="token operator">=</span> <span class="token string">"4"</span><span class="token punctuation">;</span>
+<span class="token comment">//线条末端样式</span>
+painting<span class="token punctuation">.</span>lineCap <span class="token operator">=</span> <span class="token string">"butt"</span><span class="token punctuation">;</span>  <span class="token comment">//方形结束</span>
+                   <span class="token string">"round"</span><span class="token punctuation">;</span>  <span class="token comment">//圆形结束</span>
+                   <span class="token string">"square"</span>  <span class="token comment">//方形结束，增加半个矩形区域</span>
+lineJoin <span class="token operator">=</span> <span class="token string">"bevel"</span><span class="token punctuation">;</span>  <span class="token comment">//相连部分添加额外三角形区域，每个部分有各自独立矩形拐角</span>
+           <span class="token string">"round"</span><span class="token punctuation">;</span>  <span class="token comment">//相连部分添加额外扇形</span>
+           <span class="token string">"miter"</span><span class="token punctuation">;</span>  <span class="token comment">//相连部分边缘延伸，交于一点，形成额外菱形区域</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="绘制线段"><a href="#绘制线段" class="headerlink" title="绘制线段"></a>绘制线段</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token comment">//新建一条路径，与上一次路径断开连接</span>
+painting<span class="token punctuation">.</span><span class="token function">beginPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//路径起始位置</span>
+painting<span class="token punctuation">.</span><span class="token function">moveTo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//闭合路径，路径结束点与起始点相连</span>
+painting<span class="token punctuation">.</span><span class="token function">closePath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//通过线条绘制轮廓（可以不绘制轮廓）</span>
+painting<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//填充路径的闭合区域</span>
+painting<span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>调用 <code>fill()</code> 函数时，所有没有闭合的形状都会自动闭合</li>
+<li>调用 <code>closePath()</code> 函数时，没有闭合和形状不会自动闭合</li>
+</ul>
+<h3 id="绘制矩形"><a href="#绘制矩形" class="headerlink" title="绘制矩形"></a>绘制矩形</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js"><span class="token comment">//绘制填充矩形</span>
+painting<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//绘制矩形路径</span>
+painting<span class="token punctuation">.</span><span class="token function">strokeRect</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//清除矩形区域，使其透明</span>
+painting<span class="token punctuation">.</span><span class="token function">clearRect</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>四个参数分别为：</p>
+<ul>
+<li>起始行坐标</li>
+<li>起始纵坐标</li>
+<li>矩形宽度</li>
+<li>矩形高度</li>
+</ul>
+<h3 id="绘制圆"><a href="#绘制圆" class="headerlink" title="绘制圆"></a>绘制圆</h3><h4 id="圆弧"><a href="#圆弧" class="headerlink" title="圆弧"></a>圆弧</h4><pre class="line-numbers language-js" data-language="js"><code class="language-js">painting<span class="token punctuation">.</span><span class="token function">arcTo</span><span class="token punctuation">(</span>x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> x2<span class="token punctuation">,</span> y2<span class="token punctuation">,</span> radius<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>五个参数：</p>
+<ul>
+<li>第一个控制点行坐标（切线交点）</li>
+<li>第一个控制点纵坐标（切线交点）</li>
+<li>第二个控制点行坐标（另一侧切点）</li>
+<li>第二个控制点纵坐标（另一侧切点）</li>
+<li>半径</li>
+</ul>
+<h4 id="圆"><a href="#圆" class="headerlink" title="圆"></a>圆</h4><pre class="line-numbers language-js" data-language="js"><code class="language-js">painting<span class="token punctuation">.</span><span class="token function">arc</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> radius<span class="token punctuation">,</span> startAngle<span class="token punctuation">,</span> endAngle<span class="token punctuation">,</span> anticlockwise<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>六个参数：</p>
+<ul>
+<li>圆心行坐标</li>
+<li>圆心纵坐标</li>
+<li>半径</li>
+<li>起始弧度（弧度 = 角度 * Math.PI / 180）</li>
+<li>结束弧度</li>
+<li>是否逆时针（默认 false 顺时针，true 逆时针）</li>
+</ul>
+<h2 id="图形变换"><a href="#图形变换" class="headerlink" title="图形变换"></a>图形变换</h2><h3 id="位移"><a href="#位移" class="headerlink" title="位移"></a>位移</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js">painting<span class="token punctuation">.</span><span class="token function">translate</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><strong>translate 会重新映射画布上的 (0,0) 位置，也就是对坐标轴进行位移</strong></p>
+<p>两个参数：</p>
+<ul>
+<li>水平偏移量</li>
+<li>垂直偏移量</li>
+</ul>
+<h3 id="旋转"><a href="#旋转" class="headerlink" title="旋转"></a>旋转</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js">painting<span class="token punctuation">.</span><span class="token function">rotate</span><span class="token punctuation">(</span>angle<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><strong>rotate 会对坐标轴进行旋转</strong></p>
+<ul>
+<li>一个参数：弧度（弧度 = 角度 * Math.PI / 180）</li>
+</ul>
+<h3 id="缩放"><a href="#缩放" class="headerlink" title="缩放"></a>缩放</h3><pre class="line-numbers language-js" data-language="js"><code class="language-js">painting<span class="token punctuation">.</span><span class="token function">scale</span><span class="token punctuation">(</span>scalewidth<span class="token punctuation">,</span>scaleheight<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><strong>scale 缩放整个坐标系</strong></p>
+<p>两个参数：</p>
+<ul>
+<li>行向缩放比例（1 为 100%）</li>
+<li>纵向缩放比例</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/canvas/" rel="tag"># canvas</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/default/2020-spring-festival.html" rel="prev" title="2020 新春快乐！">
+                  <i class="fa fa-chevron-left"></i> 2020 新春快乐！
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/linux/aliyun-upgrade-centos8.html" rel="next" title="阿里云服务器升级 CentOS8">
+                  阿里云服务器升级 CentOS8 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">晋 ICP 备 17000349 号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.4.0/pjax.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '.page-configurations',
+    '.main-inner',
+    '.post-toc-wrap',
+    '.languages',
+    '.pjax'
+  ],
+  analytics: false,
+  cacheBust: false,
+  scrollRestoration: false,
+  scrollTo: !CONFIG.bookmark.enable
+});
+
+document.addEventListener('pjax:success', () => {
+  pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  const hasTOC = document.querySelector('.post-toc');
+  document.querySelector('.sidebar-inner').classList.toggle('sidebar-nav-active', hasTOC);
+  document.querySelector(hasTOC ? '.sidebar-nav-toc' : '.sidebar-nav-overview').click();
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+    <div class="pjax">
+
+
+    </div>
+</body>
+</html>

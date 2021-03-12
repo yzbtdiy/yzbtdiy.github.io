@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.yzbtdiy.com","root":"/","images":"/images","scheme":"Gemini","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+<meta name="description" content="环境 操作平台：VMWare Workstation 15.2 网络模式：桥接，能访问互联网 三个节点系统均为 CentOS7.6  修改hosts文件[root@master ~]## cat &gt;&gt; &#x2F;etc&#x2F;hosts &lt;&lt;eof 192.168.3.219 node2 192.168.3.210 node1 192.168.3.211 master node1和node2都需要修">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mariadb galera 简单模拟">
+<meta property="og:url" content="https://www.yzbtdiy.com/linux/mariadb-galera.html">
+<meta property="og:site_name" content="YZBTDIY">
+<meta property="og:description" content="环境 操作平台：VMWare Workstation 15.2 网络模式：桥接，能访问互联网 三个节点系统均为 CentOS7.6  修改hosts文件[root@master ~]## cat &gt;&gt; &#x2F;etc&#x2F;hosts &lt;&lt;eof 192.168.3.219 node2 192.168.3.210 node1 192.168.3.211 master node1和node2都需要修">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-05-15T02:56:31.000Z">
+<meta property="article:modified_time" content="2021-03-12T09:36:37.930Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="mariadb">
+<meta property="article:tag" content="galera">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.yzbtdiy.com/linux/mariadb-galera.html">
+
+
+<script data-pjax class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>mariadb galera 简单模拟 | YZBTDIY</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">YZBTDIY</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">拥抱开源</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9hosts%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">修改hosts文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-yum-%E6%BA%90"><span class="nav-number">3.</span> <span class="nav-text">配置 yum 源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85MariaDB"><span class="nav-number">4.</span> <span class="nav-text">安装MariaDB</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%BE%91%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">编辑配置文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%B7%E8%B4%9D%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%87%B3%E5%85%B6%E4%BB%96%E8%8A%82%E7%82%B9"><span class="nav-number">6.</span> <span class="nav-text">拷贝配置文件至其他节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%8A%82%E7%82%B9"><span class="nav-number">7.</span> <span class="nav-text">启动第一个节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%85%B6%E4%BB%96%E8%8A%82%E7%82%B9"><span class="nav-number">8.</span> <span class="nav-text">启动其他节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">9.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#galera-%E5%BC%BA%E5%88%B6%E9%80%89%E9%A1%B9"><span class="nav-number">10.</span> <span class="nav-text">galera 强制选项</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">84</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">107</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@yzbtdiy.com" title="E-Mail → mailto:admin@yzbtdiy.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yzbtdiy" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/yzbtdiy" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-telegram fa-fw"></i>Telegram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.yzbtdiy.com/linux/mariadb-galera.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YZBTDIY">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          mariadb galera 简单模拟
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-05-15 10:56:31" itemprop="dateCreated datePublished" datetime="2019-05-15T10:56:31+08:00">2019-05-15</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-03-12 17:36:37" itemprop="dateModified" datetime="2021-03-12T17:36:37+08:00">2021-03-12</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><ul>
+<li>操作平台：VMWare Workstation 15.2</li>
+<li>网络模式：桥接，能访问互联网</li>
+<li>三个节点系统均为 CentOS7.6</li>
+</ul>
+<h2 id="修改hosts文件"><a href="#修改hosts文件" class="headerlink" title="修改hosts文件"></a>修改hosts文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@master ~<span class="token punctuation">]</span><span class="token comment">## cat >> /etc/hosts &lt;&lt;eof</span>
+<span class="token number">192.168</span>.3.219 node2
+<span class="token number">192.168</span>.3.210 node1
+<span class="token number">192.168</span>.3.211 master
+node1和node2都需要修改hosts文件<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<span id="more"></span>
+
+<h2 id="配置-yum-源"><a href="#配置-yum-源" class="headerlink" title="配置 yum 源"></a>配置 yum 源</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@master ~<span class="token punctuation">]</span><span class="token comment">## cat >> /etc/yum.repos.d/mariadb.repo &lt;&lt;eof</span>
+<span class="token punctuation">[</span>mariadb<span class="token punctuation">]</span>
+<span class="token assign-left variable">name</span><span class="token operator">=</span>mariadb
+<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>https://mirrors.tuna.tsinghua.edu.cn/mariadb//mariadb-10.3.12/yum/centos/7/x86_64/
+<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
+<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+eof<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="安装MariaDB"><a href="#安装MariaDB" class="headerlink" title="安装MariaDB"></a>安装MariaDB</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@master ~<span class="token punctuation">]</span><span class="token comment">## yum -y install MariaDB-server MariaDB-client galera</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="编辑配置文件"><a href="#编辑配置文件" class="headerlink" title="编辑配置文件"></a>编辑配置文件</h2><p>参数介绍：<a target="_blank" rel="noopener" href="https://mariadb.com/kb/en/library/full-list-of-mariadb-options-system-and-status-variables/">https://mariadb.com/kb/en/library/full-list-of-mariadb-options-system-and-status-variables/</a></p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@master ~<span class="token punctuation">]</span><span class="token comment">## vim /etc/my.cnf.d/server.cnf</span>
+<span class="token punctuation">[</span>galera<span class="token punctuation">]</span>
+<span class="token comment">## 是否启用了wsrep复制</span>
+<span class="token assign-left variable">wsrep_on</span><span class="token operator">=</span>ON
+
+<span class="token comment">## wsrep库的位置</span>
+<span class="token assign-left variable">wsrep_provider</span><span class="token operator">=</span>/usr/lib64/galera/libgalera_smm.so
+
+<span class="token comment">## 启动时要连接的群集节点的地址</span>
+<span class="token assign-left variable">wsrep_cluster_address</span><span class="token operator">=</span><span class="token string">"gcomm://192.168.3.210,192.168.3.211,192.168.3.219"</span>
+<span class="token comment">##wsrep_sst_auth=tt:tt123</span>
+<span class="token assign-left variable">binlog_format</span><span class="token operator">=</span>row
+
+<span class="token comment">## 集群的名称，节点无法连接到不同名称的群集</span>
+<span class="token assign-left variable">wsrep_cluster_name</span><span class="token operator">=</span><span class="token string">"mariadb_cluster"</span>
+
+<span class="token comment">## 本节点的网络地址</span>
+<span class="token assign-left variable">wsrep_node_address</span><span class="token operator">=</span><span class="token number">192.168</span>.3.211
+
+<span class="token comment">## 用于进行状态快照传输（SST）的方法</span>
+<span class="token assign-left variable">wsrep_sst_method</span><span class="token operator">=</span>rsync
+
+<span class="token comment">## 默认存储引擎</span>
+<span class="token assign-left variable">default_storage_engine</span><span class="token operator">=</span>InnoDB
+
+<span class="token comment">## 自动增量值的锁定模式，0是传统的锁模式，1是连续的，2是交错的</span>
+<span class="token assign-left variable">innodb_autoinc_lock_mode</span><span class="token operator">=</span><span class="token number">2</span>
+
+<span class="token comment">## InnoDB缓冲池大小（以字节为单位）</span>
+<span class="token assign-left variable">innodb_buffer_pool_size</span><span class="token operator">=</span>120M
+
+<span class="token comment">## Allow server to accept connections on all interfaces.</span>
+bind-address<span class="token operator">=</span><span class="token number">0.0</span>.0.0
+
+<span class="token comment">## 并行写入线程数</span>
+<span class="token assign-left variable">wsrep_slave_threads</span><span class="token operator">=</span><span class="token number">3</span>
+
+<span class="token comment">## 日志何时写入</span>
+<span class="token assign-left variable">innodb_flush_log_at_trx_commit</span><span class="token operator">=</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="拷贝配置文件至其他节点"><a href="#拷贝配置文件至其他节点" class="headerlink" title="拷贝配置文件至其他节点"></a>拷贝配置文件至其他节点</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@master ~<span class="token punctuation">]</span><span class="token comment">## scp /etc/my.cnf.d/server.cnf root@node1:/etc/my.cnf.d/</span>
+<span class="token punctuation">[</span>root@master ~<span class="token punctuation">]</span><span class="token comment">## scp /etc/my.cnf.d/server.cnf root@node2:/etc/my.cnf.d/</span>
+在node1和node2上修改wsrep_node_address为该主机对应IP地址<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="启动第一个节点"><a href="#启动第一个节点" class="headerlink" title="启动第一个节点"></a>启动第一个节点</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@master ~<span class="token punctuation">]</span><span class="token comment">## galera_new_cluster</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="启动其他节点"><a href="#启动其他节点" class="headerlink" title="启动其他节点"></a>启动其他节点</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@node1 ~<span class="token punctuation">]</span><span class="token comment">## systemctl restart mariadb</span>
+<span class="token punctuation">[</span>root@node2 ~<span class="token punctuation">]</span><span class="token comment">## systemctl restart mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> show status like <span class="token string">'%wsrep_cluster%'</span><span class="token punctuation">;</span>
++--------------------------+--------------------------------------+
+<span class="token operator">|</span> Variable_name            <span class="token operator">|</span> Value                                <span class="token operator">|</span>
++--------------------------+--------------------------------------+
+<span class="token operator">|</span> wsrep_cluster_conf_id    <span class="token operator">|</span> <span class="token number">43</span>                                   <span class="token operator">|</span>
+<span class="token operator">|</span> wsrep_cluster_size       <span class="token operator">|</span> <span class="token number">3</span>                                    <span class="token operator">|</span>
+<span class="token operator">|</span> wsrep_cluster_state_uuid <span class="token operator">|</span> 1d02e7d0-1b92-11e9-ad2c-f313ceeb262e <span class="token operator">|</span>
+<span class="token operator">|</span> wsrep_cluster_status     <span class="token operator">|</span> Primary                              <span class="token operator">|</span>
+<span class="token operator">|</span> wsrep_cluster_weight     <span class="token operator">|</span> <span class="token number">3</span>                                    <span class="token operator">|</span>
++--------------------------+--------------------------------------+
+<span class="token number">5</span> rows <span class="token keyword">in</span> <span class="token builtin class-name">set</span> <span class="token punctuation">(</span><span class="token number">0.002</span> sec<span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="galera-强制选项"><a href="#galera-强制选项" class="headerlink" title="galera 强制选项"></a>galera 强制选项</h2><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>wsrep_provider</td>
+<td>galera库位置</td>
+</tr>
+<tr>
+<td>wsrep_cluster_address</td>
+<td>集群节点地址</td>
+</tr>
+<tr>
+<td>binlog_format=ROW</td>
+<td>二进制日志格式</td>
+</tr>
+<tr>
+<td>default_storage_engine=InnoDB</td>
+<td>默认存储引擎</td>
+</tr>
+<tr>
+<td>innodb_autoinc_lock_mode=2</td>
+<td>自动增量值的锁定模式</td>
+</tr>
+<tr>
+<td>innodb_doublewrite=1</td>
+<td>双写缓冲</td>
+</tr>
+<tr>
+<td>query_cache_size=0</td>
+<td>高速缓存启动方法及参数详解，仅对MariaDB Galera Cluster 5.5.40，MariaDB Galera Cluster 10.0.14和MariaDB 10.1.2之前的MariaDB版本必需</td>
+</tr>
+<tr>
+<td>wsrep_on=ON</td>
+<td>启用wsrep复制（从10.1.1开始）</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mariadb/" rel="tag"># mariadb</a>
+              <a href="/tags/galera/" rel="tag"># galera</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/tools/qemu-convert-format.html" rel="prev" title="qemu 转化虚拟硬盘格式">
+                  <i class="fa fa-chevron-left"></i> qemu 转化虚拟硬盘格式
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/golang/go-tour-offline.html" rel="next" title="go-tour 离线版">
+                  go-tour 离线版 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">晋 ICP 备 17000349 号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.4.0/pjax.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '.page-configurations',
+    '.main-inner',
+    '.post-toc-wrap',
+    '.languages',
+    '.pjax'
+  ],
+  analytics: false,
+  cacheBust: false,
+  scrollRestoration: false,
+  scrollTo: !CONFIG.bookmark.enable
+});
+
+document.addEventListener('pjax:success', () => {
+  pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  const hasTOC = document.querySelector('.post-toc');
+  document.querySelector('.sidebar-inner').classList.toggle('sidebar-nav-active', hasTOC);
+  document.querySelector(hasTOC ? '.sidebar-nav-toc' : '.sidebar-nav-overview').click();
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+    <div class="pjax">
+
+
+    </div>
+</body>
+</html>

