@@ -13,7 +13,7 @@ tags:
 ## 主机发现
 
 ```shell
-[root@kali ~]# nmap -sn 192.168.64.0/24
+[root@kali ~]# arp-scan -I eth0 -l
 ```
 
 ## 端口探测

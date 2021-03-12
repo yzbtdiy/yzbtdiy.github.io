@@ -13,9 +13,13 @@ tags:
 ## 主机发现
 
 ```shell
+# arp 查询(可选)
+[root@kali ~]# arp-scan -I eth0 -l
+
+# nmap 扫描(可选)
 [root@kali ~]# nmap -sn 192.168.64.0/24
 
-# 也可以通过 netdiscover 查询
+# netdiscover 查询(可选)
 [root@kali ~]# netdiscover -i eth0 -r 192.168.64.0/24
 ```
 
