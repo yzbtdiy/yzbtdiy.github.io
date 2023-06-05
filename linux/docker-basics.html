@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.opensource.cool","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.16.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="获取 docker 可以通过 centos7 的 extras 源直接安装 docker 从 docker 官方获取最新版 docker ce参考：https:&#x2F;&#x2F;docs.docker.com&#x2F;install&#x2F;linux&#x2F;docker-ce&#x2F;centos&#x2F; docker 中的程序未加载至内存中运行为 image（镜像），加载至内存中运行为 container（容器）  以下为最新版 docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker 基础用法">
+<meta property="og:url" content="https://blog.opensource.cool/linux/docker-basics.html">
+<meta property="og:site_name" content="yzbtdiy&#39;s blog">
+<meta property="og:description" content="获取 docker 可以通过 centos7 的 extras 源直接安装 docker 从 docker 官方获取最新版 docker ce参考：https:&#x2F;&#x2F;docs.docker.com&#x2F;install&#x2F;linux&#x2F;docker-ce&#x2F;centos&#x2F; docker 中的程序未加载至内存中运行为 image（镜像），加载至内存中运行为 container（容器）  以下为最新版 docker">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-07-02T03:32:27.000Z">
+<meta property="article:modified_time" content="2023-06-05T09:55:34.547Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="golang">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://blog.opensource.cool/linux/docker-basics.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.opensource.cool/linux/docker-basics.html","path":"linux/docker-basics.html","title":"docker 基础用法"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>docker 基础用法 | yzbtdiy's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">yzbtdiy's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96-docker"><span class="nav-number">1.</span> <span class="nav-text">获取 docker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96-yum-%E6%BA%90"><span class="nav-number">2.</span> <span class="nav-text">获取 yum 源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-docker-ce-%E5%B9%B6%E8%BF%90%E8%A1%8C"><span class="nav-number">3.</span> <span class="nav-text">安装 docker ce 并运行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%9C%AC%E5%9C%B0%E7%BD%91%E7%BB%9C"><span class="nav-number">4.</span> <span class="nav-text">查看本地网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8-dockerhub-%E4%B8%AD%E6%90%9C%E7%B4%A2-image"><span class="nav-number">5.</span> <span class="nav-text">在 dockerhub 中搜索 image</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD-image-%E5%88%B0%E6%9C%AC%E5%9C%B0"><span class="nav-number">6.</span> <span class="nav-text">下载 image 到本地</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BD%E5%86%85%E6%BA%90%E5%8A%A0%E9%80%9F"><span class="nav-number">6.1.</span> <span class="nav-text">国内源加速</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86"><span class="nav-number">6.2.</span> <span class="nav-text">设置代理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%9C%AC%E5%9C%B0-images"><span class="nav-number">7.</span> <span class="nav-text">查看本地 images</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C-web-container"><span class="nav-number">8.</span> <span class="nav-text">运行 web container</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84-container"><span class="nav-number">9.</span> <span class="nav-text">查看运行中的 container</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4-container"><span class="nav-number">10.</span> <span class="nav-text">删除 container</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4-image"><span class="nav-number">11.</span> <span class="nav-text">删除 image</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">81</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">108</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.opensource.cool/linux/docker-basics.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yzbtdiy's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="docker 基础用法 | yzbtdiy's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          docker 基础用法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-07-02 11:32:27" itemprop="dateCreated datePublished" datetime="2019-07-02T11:32:27+08:00">2019-07-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-06-05 17:55:34" itemprop="dateModified" datetime="2023-06-05T17:55:34+08:00">2023-06-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="获取-docker"><a href="#获取-docker" class="headerlink" title="获取 docker"></a>获取 docker</h2><ul>
+<li>可以通过 centos7 的 extras 源直接安装 docker</li>
+<li>从 docker 官方获取最新版 docker ce<br>参考：<a target="_blank" rel="noopener" href="https://docs.docker.com/install/linux/docker-ce/centos/">https://docs.docker.com/install/linux/docker-ce/centos/</a></li>
+<li>docker 中的程序未加载至内存中运行为 image（镜像），加载至内存中运行为 container（容器）</li>
+</ul>
+<p><strong>以下为最新版 docker ce 的安装使用</strong></p>
+<h2 id="获取-yum-源"><a href="#获取-yum-源" class="headerlink" title="获取 yum 源"></a>获取 yum 源</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## curl https://download.docker.com/linux/centos/docker-ce.repo > /etc/yum.repos.d/docker.repo</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="安装-docker-ce-并运行"><a href="#安装-docker-ce-并运行" class="headerlink" title="安装 docker ce 并运行"></a>安装 docker ce 并运行</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## yum -y install docker-ce docker-ce-cli containerd.io</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## systemctl restart docker</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<span id="more"></span>
+
+<h2 id="查看本地网络"><a href="#查看本地网络" class="headerlink" title="查看本地网络"></a>查看本地网络</h2><ul>
+<li>本地出现名为 docker0 的 connection 以及 device</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## nmcli con show</span>
+NAME     UUID                                  TYPE      DEVICE
+docker0  bca532d6-7c78-4437-84b7-8fab094d7118  bridge    docker0
+ens33    e0b955f8-ae58-4b8c-b5cf-dc6eb7c4a45f  ethernet  ens33<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>device docker0 为 bridge 类型</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## nmcli device show docker0</span>
+GENERAL.DEVICE:                         docker0
+GENERAL.TYPE:                           bridge
+GENERAL.HWADDR:                         02:42:52:49:72:87
+GENERAL.MTU:                            <span class="token number">1500</span>
+GENERAL.STATE:                          <span class="token number">100</span> <span class="token punctuation">(</span>connected<span class="token punctuation">)</span>
+GENERAL.CONNECTION:                     docker0
+GENERAL.CON-<span class="token environment constant">PATH</span><span class="token builtin class-name">:</span>                       /org/freedesktop/NetworkManager/ActiveConnection/3
+IP4.ADDRESS<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>:                         <span class="token number">172.17</span>.0.1/16
+IP4.GATEWAY:                            --
+IP4.ROUTE<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>:                           dst <span class="token operator">=</span> <span class="token number">172.17</span>.0.0/16, nh <span class="token operator">=</span> <span class="token number">0.0</span>.0.0, mt <span class="token operator">=</span> <span class="token number">0</span>
+IP6.GATEWAY:                            --<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="在-dockerhub-中搜索-image"><a href="#在-dockerhub-中搜索-image" class="headerlink" title="在 dockerhub 中搜索 image"></a>在 dockerhub 中搜索 image</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## docker search httpd</span>
+NAME                                 DESCRIPTION                                     STARS               OFFICIAL            AUTOMATED
+httpd                                The Apache HTTP Server Project                  <span class="token number">2537</span>                <span class="token punctuation">[</span>OK<span class="token punctuation">]</span>
+centos/httpd                                                                         <span class="token number">23</span>                                      <span class="token punctuation">[</span>OK<span class="token punctuation">]</span>
+centos/httpd-24-centos7              Platform <span class="token keyword">for</span> running Apache httpd <span class="token number">2.4</span> or bui…   <span class="token number">22</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="下载-image-到本地"><a href="#下载-image-到本地" class="headerlink" title="下载 image 到本地"></a>下载 image 到本地</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## docker pull centos/httpd</span>
+Using default tag: latest
+latest: Pulling from centos/httpd
+a02a4930cb5d: Pull complete
+628eaef4a9e0: Pull complete
+20c0ca1c0cd5: Pull complete
+30cf2fb1a57e: Pull complete
+Digest: sha256:26c6674463ff3b8529874b17f8bb55d21a0dcf86e025eafb3c9eeee15ee4f369
+Status: Downloaded newer image <span class="token keyword">for</span> centos/httpd:latest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="国内源加速"><a href="#国内源加速" class="headerlink" title="国内源加速"></a>国内源加速</h3><p><code>/etc/docker/daemon.json</code> 文件添加镜像站点</p>
+<pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token punctuation">&#123;</span>
+  <span class="token property">"registry-mirrors"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token string">"http://f1361db2.m.daocloud.io"</span><span class="token punctuation">,</span>
+    <span class="token string">"https://hub-mirror.c.163.com"</span><span class="token punctuation">,</span>
+    <span class="token string">"https://ustc-edu-cn.mirror.aliyuncs.com"</span>
+  <span class="token punctuation">]</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><a target="_blank" rel="noopener" href="https://www.daocloud.io/mirror">DaoCloud</a> 镜像加速脚本</p>
+<h3 id="设置代理"><a href="#设置代理" class="headerlink" title="设置代理"></a>设置代理</h3><ul>
+<li>使用国内镜像站加速可能遇到某些情况下latest并不是最新版,设置代理从原始镜像站下载可解决此问题</li>
+</ul>
+<p><strong>systemd 配置 proxy</strong></p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost~<span class="token punctuation">]</span><span class="token comment"># vim /etc/systemd/system/docker.service.d/http-proxy.conf</span>
+<span class="token punctuation">[</span>Service<span class="token punctuation">]</span>
+<span class="token assign-left variable">Environment</span><span class="token operator">=</span><span class="token string">"HTTP_PROXY=http://127.0.0.1:10809"</span>
+<span class="token assign-left variable">Environment</span><span class="token operator">=</span><span class="token string">"HTTPS_PROXY=http://127.0.0.1:10809"</span>
+<span class="token assign-left variable">Environment</span><span class="token operator">=</span><span class="token string">"NO_PROXY=localhost,127.0.0.1"</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># systemctl daemon-reload</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart docker</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><strong>docker 实例配置proxy</strong>(测试未成功)</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># vim  ~/.docker/config.json</span>
+<span class="token punctuation">&#123;</span>
+ <span class="token string">"proxies"</span><span class="token builtin class-name">:</span>
+ <span class="token punctuation">&#123;</span>
+   <span class="token string">"default"</span><span class="token builtin class-name">:</span>
+   <span class="token punctuation">&#123;</span>
+     <span class="token string">"httpProxy"</span><span class="token builtin class-name">:</span> <span class="token string">"http://127.0.0.1:10809"</span>,
+     <span class="token string">"httpsProxy"</span><span class="token builtin class-name">:</span> <span class="token string">"http://127.0.0.1:10809"</span>,
+     <span class="token string">"noProxy"</span><span class="token builtin class-name">:</span> <span class="token string">"127.0.0.0/8,localhost"</span>
+   <span class="token punctuation">&#125;</span>
+ <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart docker</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="查看本地-images"><a href="#查看本地-images" class="headerlink" title="查看本地 images"></a>查看本地 images</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## docker images</span>
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+centos/httpd        latest              2cc07fbb5000        <span class="token number">6</span> months ago        258MB<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="运行-web-container"><a href="#运行-web-container" class="headerlink" title="运行 web container"></a>运行 web container</h2><ul>
+<li>-d 后台运行</li>
+<li>–name 容器的名字</li>
+<li>-p 端口映射，对外提供服务</li>
+<li>-v 卷映射，实现数据持久化</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## docker run -d --name myweb -p 80:80 -v /data/web:/var/www/html centos/httpd</span>
+a7ff084c8207d20c3ba91c0a87b7e9c0a6dd141c404f302d5cca6926abf0233d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h2 id="查看运行中的-container"><a href="#查看运行中的-container" class="headerlink" title="查看运行中的 container"></a>查看运行中的 container</h2><ul>
+<li>-a 显示已退出的 container</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## docker ps -a</span>
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                NAMES
+a7ff084c8207        centos/httpd        <span class="token string">"/run-httpd.sh"</span>     <span class="token number">4</span> seconds ago       Up <span class="token number">3</span> seconds        <span class="token number">0.0</span>.0.0:80-<span class="token operator">></span><span class="token number">80</span>/tcp   myweb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="删除-container"><a href="#删除-container" class="headerlink" title="删除 container"></a>删除 container</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## docker stop myweb</span>
+myweb
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## docker rm myweb</span>
+myweb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="删除-image"><a href="#删除-image" class="headerlink" title="删除 image"></a>删除 image</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment">## docker rmi centos/httpd:latest</span>
+Untagged: centos/httpd:latest
+Untagged: centos/httpd@sha256:26c6674463ff3b8529874b17f8bb55d21a0dcf86e025eafb3c9eeee15ee4f369
+Deleted: sha256:2cc07fbb5000234e85b7ef63b6253f397491959af2a24251b6ae20c207beb814
+Deleted: sha256:b6a8d07fb6bd99c422d23fbe6972939859126de0210b25daeed5c37e9255d91d
+Deleted: sha256:365791a9af5080b5d029c9d3a230576a0bfd495a86651f2226d78877b64d9f0b
+Deleted: sha256:e7da76d398f3e25f9ba9dc6181501f1181fc13d057a6a10e03bccc41c7bfbb32
+Deleted: sha256:071d8bd765171080d01682844524be57ac9883e53079b6ac66707e192ea25956<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/golang/" rel="tag"># golang</a>
+              <a href="/tags/docker/" rel="tag"># docker</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/linux/mindoc-install.html" rel="prev" title="mindoc 安装">
+                  <i class="fa fa-chevron-left"></i> mindoc 安装
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/linux/turn-on-tcp-bbr.html" rel="next" title="开启 TCP BBR">
+                  开启 TCP BBR <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/yzbtdiy" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.6.0/pjax.min.js" integrity="sha256-vxLn1tSKWD4dqbMRyv940UYw4sXgMtYcK6reefzZrao=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

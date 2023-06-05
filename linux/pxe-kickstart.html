@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.opensource.cool","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.16.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="简介 PXE是基于 server&#x2F;client 模式的技术，让客户端从远程服务器下载启动镜像，从而实现网络启动。客户端要求服务器通过 DHCP 分配 IP 地址，再通过 TFTP 下载启动镜像。 Kickstart 将安装过程中需要手动设置的参数保存为应答文件，通过读取应答文件实现无人值守安装。 安装源可以通过 FTP，NFS，HTTP 等提供。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PXE &amp; Kickstart 安装 CentOS7">
+<meta property="og:url" content="https://blog.opensource.cool/linux/pxe-kickstart.html">
+<meta property="og:site_name" content="yzbtdiy&#39;s blog">
+<meta property="og:description" content="简介 PXE是基于 server&#x2F;client 模式的技术，让客户端从远程服务器下载启动镜像，从而实现网络启动。客户端要求服务器通过 DHCP 分配 IP 地址，再通过 TFTP 下载启动镜像。 Kickstart 将安装过程中需要手动设置的参数保存为应答文件，通过读取应答文件实现无人值守安装。 安装源可以通过 FTP，NFS，HTTP 等提供。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/linux/pxe-desc.svg">
+<meta property="article:published_time" content="2019-05-09T01:44:49.000Z">
+<meta property="article:modified_time" content="2023-06-05T09:55:34.547Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="pxe">
+<meta property="article:tag" content="kickstart">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/linux/pxe-desc.svg">
+
+
+<link rel="canonical" href="https://blog.opensource.cool/linux/pxe-kickstart.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.opensource.cool/linux/pxe-kickstart.html","path":"linux/pxe-kickstart.html","title":"PXE & Kickstart 安装 CentOS7"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PXE & Kickstart 安装 CentOS7 | yzbtdiy's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">yzbtdiy's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E8%BD%AF%E4%BB%B6%E5%8C%85"><span class="nav-number">2.</span> <span class="nav-text">安装软件包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-dhcp"><span class="nav-number">3.</span> <span class="nav-text">配置 dhcp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%97%AD%E9%98%B2%E7%81%AB%E5%A2%99%E5%92%8C-SELinux"><span class="nav-number">4.</span> <span class="nav-text">关闭防火墙和 SELinux</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-tftp"><span class="nav-number">5.</span> <span class="nav-text">配置 tftp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-pxe-%E5%BC%95%E5%AF%BC%E6%96%87%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">配置 pxe 引导文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87-Kickstart-%E6%97%A0%E4%BA%BA%E5%80%BC%E5%AE%88%E6%96%87%E4%BB%B6"><span class="nav-number">7.</span> <span class="nav-text">准备 Kickstart 无人值守文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8-apache%EF%BC%8C%E6%B5%8B%E8%AF%95%E8%83%BD%E5%90%A6%E8%AE%BF%E9%97%AE%E5%AE%89%E8%A3%85%E6%BA%90%E5%92%8C-ks-%E6%96%87%E4%BB%B6"><span class="nav-number">8.</span> <span class="nav-text">启动 apache，测试能否访问安装源和 ks 文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A3%B8%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%BC%95%E5%AF%BC%E5%AE%89%E8%A3%85%E7%B3%BB%E7%BB%9F"><span class="nav-number">9.</span> <span class="nav-text">裸机网络引导安装系统</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">81</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">108</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.opensource.cool/linux/pxe-kickstart.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yzbtdiy's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="PXE & Kickstart 安装 CentOS7 | yzbtdiy's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PXE & Kickstart 安装 CentOS7
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-05-09 09:44:49" itemprop="dateCreated datePublished" datetime="2019-05-09T09:44:49+08:00">2019-05-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-06-05 17:55:34" itemprop="dateModified" datetime="2023-06-05T17:55:34+08:00">2023-06-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><img data-src="https://cdn.jsdelivr.net/gh/yzbtdiy/images@main/linux/pxe-desc.svg"></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><ul>
+<li>PXE是基于 server&#x2F;client 模式的技术，让客户端从远程服务器下载启动镜像，从而实现网络启动。客户端要求服务器通过 DHCP 分配 IP 地址，再通过 TFTP 下载启动镜像。</li>
+<li>Kickstart 将安装过程中需要手动设置的参数保存为应答文件，通过读取应答文件实现无人值守安装。</li>
+<li>安装源可以通过 FTP，NFS，HTTP 等提供。</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="安装软件包"><a href="#安装软件包" class="headerlink" title="安装软件包"></a>安装软件包</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># yum -y install tftp-server dhcp syslinux httpd</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="配置-dhcp"><a href="#配置-dhcp" class="headerlink" title="配置 dhcp"></a>配置 dhcp</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/dhcp/dhcpd.conf</span>
+subnet <span class="token number">172.25</span>.254.0 netmask <span class="token number">255.255</span>.255.0 <span class="token punctuation">&#123;</span>
+  range <span class="token number">172.25</span>.254.1 <span class="token number">172.25</span>.254.250<span class="token punctuation">;</span>
+  option routers <span class="token number">172.25</span>.254.254<span class="token punctuation">;</span>
+  default-lease-time <span class="token number">600</span><span class="token punctuation">;</span>
+  max-lease-time <span class="token number">7200</span><span class="token punctuation">;</span>
+  filename <span class="token string">"/pxelinux.0"</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart dhcpd</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable dhcpd</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="关闭防火墙和-SELinux"><a href="#关闭防火墙和-SELinux" class="headerlink" title="关闭防火墙和 SELinux"></a>关闭防火墙和 SELinux</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl stop firewalld</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl disable firewalld</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># setenforce 0</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/selinux/config</span>
+<span class="token assign-left variable">SELINUX</span><span class="token operator">=</span>disabled<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="配置-tftp"><a href="#配置-tftp" class="headerlink" title="配置 tftp"></a>配置 tftp</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/xinetd.d/tftp</span>
+<span class="token function">service</span> tftp
+<span class="token punctuation">&#123;</span>
+        socket_type             <span class="token operator">=</span> dgram
+        protocol                <span class="token operator">=</span> udp
+        <span class="token function">wait</span>                    <span class="token operator">=</span> <span class="token function">yes</span>
+        user                    <span class="token operator">=</span> root
+        server                  <span class="token operator">=</span> /usr/sbin/in.tftpd
+        server_args             <span class="token operator">=</span> <span class="token parameter variable">-s</span> /var/lib/tftpboot
+        disable                 <span class="token operator">=</span> no
+        per_source              <span class="token operator">=</span> <span class="token number">11</span>
+        cps                     <span class="token operator">=</span> <span class="token number">100</span> <span class="token number">2</span>
+        flags                   <span class="token operator">=</span> IPv4
+<span class="token punctuation">&#125;</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart tftp</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable tftp</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="配置-pxe-引导文件"><a href="#配置-pxe-引导文件" class="headerlink" title="配置 pxe 引导文件"></a>配置 pxe 引导文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># cp /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># mkdir /var/www/html/cdrom</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># mount /dev/sr0 /var/www/html/cdrom</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># cp /var/www/html/cdrom/isolinux/&#123;vmlinuz,initrd.img&#125; /var/lib/tftpboot/</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># mkdir /var/lib/tftpboot/pxelinux.cfg</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># cp /var/www/html/cdrom/isolinux/isolinux.cfg /var/lib/tftpboot/pxelinux.cfg/default</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># vim /var/lib/tftpboot/pxelinux.cfg/default</span>
+default linux
+<span class="token punctuation">..</span>. <span class="token punctuation">..</span>.
+label linux
+  menu label ^Install CentOS <span class="token number">7</span>
+  kernel vmlinuz
+  append <span class="token assign-left variable">initrd</span><span class="token operator">=</span>initrd.img <span class="token assign-left variable">inst.stage2</span><span class="token operator">=</span>http://172.25.254.254/cdrom <span class="token assign-left variable">ks</span><span class="token operator">=</span>http://172.25.254.254/ks.cfg quiet
+<span class="token punctuation">..</span>. <span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="准备-Kickstart-无人值守文件"><a href="#准备-Kickstart-无人值守文件" class="headerlink" title="准备 Kickstart 无人值守文件"></a>准备 Kickstart 无人值守文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># cp anaconda-ks.cfg /var/www/html/ks.cfg</span>
+<span class="token comment">#version=DEVEL</span>
+<span class="token comment"># System authorization information</span>
+auth <span class="token parameter variable">--enableshadow</span> <span class="token parameter variable">--passalgo</span><span class="token operator">=</span>sha512
+<span class="token comment"># Use CDROM installation media</span>
+url <span class="token parameter variable">--url</span><span class="token operator">=</span>http://172.25.254.254/cdrom
+<span class="token comment"># Use graphical install</span>
+graphical
+<span class="token comment"># Run the Setup Agent on first boot</span>
+firstboot <span class="token parameter variable">--enable</span>
+ignoredisk --only-use<span class="token operator">=</span>sda
+<span class="token comment"># Keyboard layouts</span>
+keyboard <span class="token parameter variable">--vckeymap</span><span class="token operator">=</span>us <span class="token parameter variable">--xlayouts</span><span class="token operator">=</span><span class="token string">'us'</span>
+<span class="token comment"># System language</span>
+lang en_US.UTF-8
+
+<span class="token comment"># Network information</span>
+network  <span class="token parameter variable">--bootproto</span><span class="token operator">=</span>dhcp <span class="token parameter variable">--device</span><span class="token operator">=</span>ens33 <span class="token parameter variable">--onboot</span><span class="token operator">=</span>off <span class="token parameter variable">--ipv6</span><span class="token operator">=</span>auto --no-activate
+network  <span class="token parameter variable">--hostname</span><span class="token operator">=</span>localhost.localdomain
+
+<span class="token comment"># Root password</span>
+rootpw <span class="token parameter variable">--iscrypted</span> <span class="token variable">$6</span><span class="token variable">$BJfADb7EusYxHOyu</span><span class="token variable">$aKf2OgGT3qSOKdwgvUd8y3ZI4T4ZWe40DZ4ZfN4PEA8ceFuuauBGVUsqM12RYu36w8SwdKzjbXz2kt</span>.NdxSmn.
+<span class="token comment"># System services</span>
+services <span class="token parameter variable">--disabled</span><span class="token operator">=</span><span class="token string">"chronyd"</span>
+<span class="token comment"># System timezone</span>
+timezone Asia/Shanghai <span class="token parameter variable">--isUtc</span> <span class="token parameter variable">--nontp</span>
+<span class="token comment"># System bootloader configuration</span>
+bootloader <span class="token parameter variable">--append</span><span class="token operator">=</span><span class="token string">" crashkernel=auto"</span> <span class="token parameter variable">--location</span><span class="token operator">=</span>mbr --boot-drive<span class="token operator">=</span>sda
+autopart <span class="token parameter variable">--type</span><span class="token operator">=</span>lvm
+<span class="token comment"># Partition clearing information</span>
+clearpart <span class="token parameter variable">--none</span> <span class="token parameter variable">--initlabel</span>
+
+%packages
+@^minimal
+@core
+kexec-tools
+
+%end
+
+%addon com_redhat_kdump <span class="token parameter variable">--enable</span> --reserve-mb<span class="token operator">=</span><span class="token string">'auto'</span>
+
+%end
+
+%anaconda
+pwpolicy root <span class="token parameter variable">--minlen</span><span class="token operator">=</span><span class="token number">6</span> <span class="token parameter variable">--minquality</span><span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--notstrict</span> <span class="token parameter variable">--nochanges</span> <span class="token parameter variable">--notempty</span>
+pwpolicy user <span class="token parameter variable">--minlen</span><span class="token operator">=</span><span class="token number">6</span> <span class="token parameter variable">--minquality</span><span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--notstrict</span> <span class="token parameter variable">--nochanges</span> <span class="token parameter variable">--emptyok</span>
+pwpolicy luks <span class="token parameter variable">--minlen</span><span class="token operator">=</span><span class="token number">6</span> <span class="token parameter variable">--minquality</span><span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--notstrict</span> <span class="token parameter variable">--nochanges</span> <span class="token parameter variable">--notempty</span>
+%end<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="启动-apache，测试能否访问安装源和-ks-文件"><a href="#启动-apache，测试能否访问安装源和-ks-文件" class="headerlink" title="启动 apache，测试能否访问安装源和 ks 文件"></a>启动 apache，测试能否访问安装源和 ks 文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart httpd</span>
+<span class="token punctuation">[</span>root@server ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable httpd</span>
+浏览器访问 <span class="token number">172.25</span>.254.254/cdrom 和 <span class="token number">172.25</span>.254.254/ks.cfg<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="裸机网络引导安装系统"><a href="#裸机网络引导安装系统" class="headerlink" title="裸机网络引导安装系统"></a>裸机网络引导安装系统</h2>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pxe/" rel="tag"># pxe</a>
+              <a href="/tags/kickstart/" rel="tag"># kickstart</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/linux/rhel8-release.html" rel="prev" title="红帽 rhel8 发布">
+                  <i class="fa fa-chevron-left"></i> 红帽 rhel8 发布
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/linux/elrepo-update-kernel.html" rel="next" title="Elrepo 源升级 CentOS7/RHEL7 内核">
+                  Elrepo 源升级 CentOS7/RHEL7 内核 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/yzbtdiy" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.6.0/pjax.min.js" integrity="sha256-vxLn1tSKWD4dqbMRyv940UYw4sXgMtYcK6reefzZrao=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.opensource.cool","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.16.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前端对于请求数据条数过多时, 可以考虑数据分页显示, 可以通过两个参数pageSize(每页显示的条数) 和pageNumber(页数)来进行控制. 前端请求数据传参发送 ajax 请求时传递 psize 和 pnum 两个参数, psize 为10 期望每页返回10条数据, pnum 为 1 期望返回第一页的数据. http:&#x2F;&#x2F;localhost:8848&#x2F;api&#x2F;datalist?psize">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang后端数分页">
+<meta property="og:url" content="https://blog.opensource.cool/golang/data-paging.html">
+<meta property="og:site_name" content="yzbtdiy&#39;s blog">
+<meta property="og:description" content="前端对于请求数据条数过多时, 可以考虑数据分页显示, 可以通过两个参数pageSize(每页显示的条数) 和pageNumber(页数)来进行控制. 前端请求数据传参发送 ajax 请求时传递 psize 和 pnum 两个参数, psize 为10 期望每页返回10条数据, pnum 为 1 期望返回第一页的数据. http:&#x2F;&#x2F;localhost:8848&#x2F;api&#x2F;datalist?psize">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-10T08:14:03.000Z">
+<meta property="article:modified_time" content="2023-06-05T09:55:34.547Z">
+<meta property="article:author" content="yzbtdiy">
+<meta property="article:tag" content="golang">
+<meta property="article:tag" content="database">
+<meta property="article:tag" content="pagination">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://blog.opensource.cool/golang/data-paging.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.opensource.cool/golang/data-paging.html","path":"golang/data-paging.html","title":"Golang后端数分页"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Golang后端数分页 | yzbtdiy's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">yzbtdiy's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E7%AB%AF%E8%AF%B7%E6%B1%82%E6%95%B0%E6%8D%AE%E4%BC%A0%E5%8F%82"><span class="nav-number">1.</span> <span class="nav-text">前端请求数据传参</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E7%AB%AF%E8%8E%B7%E5%8F%96%E5%8F%82%E6%95%B0%E5%A4%84%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">后端获取参数处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HandleFunc-%E5%A6%82%E4%B8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">HandleFunc 如下</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Gorm-%E6%9F%A5%E8%AF%A2%E6%93%8D%E4%BD%9C%E5%A6%82%E4%B8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">Gorm 查询操作如下</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E5%90%8E%E7%AB%AF%E4%BB%A3%E7%A0%81-demo"><span class="nav-number">3.</span> <span class="nav-text">完整后端代码(demo)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">4.</span> <span class="nav-text">测试</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="yzbtdiy"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">yzbtdiy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">81</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">108</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yzbtdiy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yzbtdiy" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.opensource.cool/golang/data-paging.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="yzbtdiy">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yzbtdiy's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Golang后端数分页 | yzbtdiy's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Golang后端数分页
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-09-10 16:14:03" itemprop="dateCreated datePublished" datetime="2022-09-10T16:14:03+08:00">2022-09-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-06-05 17:55:34" itemprop="dateModified" datetime="2023-06-05T17:55:34+08:00">2023-06-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>前端对于请求数据条数过多时, 可以考虑数据分页显示, 可以通过两个参数<code>pageSize</code>(每页显示的条数) 和<code>pageNumber</code>(页数)来进行控制.</p>
+<h2 id="前端请求数据传参"><a href="#前端请求数据传参" class="headerlink" title="前端请求数据传参"></a>前端请求数据传参</h2><p>发送 ajax 请求时传递 <code>psize</code> 和 <code>pnum</code> 两个参数, <code>psize</code> 为10 期望每页返回10条数据, <code>pnum</code> 为 1 期望返回第一页的数据.</p>
+<pre class="line-numbers language-uri" data-language="uri"><code class="language-uri"><span class="token scheme">http<span class="token scheme-delimiter">:</span></span><span class="token authority"><span class="token authority-delimiter">//</span><span class="token host">localhost</span><span class="token port-segment"><span class="token port-delimiter">:</span><span class="token port">8848</span></span></span><span class="token path"><span class="token path-separator">/</span>api<span class="token path-separator">/</span>datalist</span><span class="token query"><span class="token query-delimiter">?</span><span class="token pair"><span class="token key">psize</span>=<span class="token value">10</span></span><span class="token pair-delimiter">&amp;</span><span class="token pair"><span class="token key">pnum</span>=<span class="token value">1</span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<span id="more"></span>
+
+<h2 id="后端获取参数处理"><a href="#后端获取参数处理" class="headerlink" title="后端获取参数处理"></a>后端获取参数处理</h2><h3 id="HandleFunc-如下"><a href="#HandleFunc-如下" class="headerlink" title="HandleFunc 如下"></a>HandleFunc 如下</h3><p>从请求的url中读取 <code>psize</code> 和 <code>pnum</code> 的值, 由于从url 中获取的值为字符串类型, 所以要先转化为整数类型, 然后传递给数据库处理</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">DataListApi</span><span class="token punctuation">(</span>w http<span class="token punctuation">.</span>ResponseWriter<span class="token punctuation">,</span> r <span class="token operator">*</span>http<span class="token punctuation">.</span>Request<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	params <span class="token operator">:=</span> r<span class="token punctuation">.</span>URL<span class="token punctuation">.</span><span class="token function">Query</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	pageSize<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> strconv<span class="token punctuation">.</span><span class="token function">Atoi</span><span class="token punctuation">(</span>params<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span><span class="token string">"psize"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	pageNum<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> strconv<span class="token punctuation">.</span><span class="token function">Atoi</span><span class="token punctuation">(</span>params<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span><span class="token string">"pnum"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	dataList <span class="token operator">:=</span> <span class="token function">GetDataFromDbByPages</span><span class="token punctuation">(</span>pageSize<span class="token punctuation">,</span> pageNum<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> dataList <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		jsonData<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> json<span class="token punctuation">.</span><span class="token function">Marshal</span><span class="token punctuation">(</span>dataList<span class="token punctuation">)</span>
+		<span class="token boolean">_</span><span class="token punctuation">,</span> err <span class="token operator">:=</span> w<span class="token punctuation">.</span><span class="token function">Write</span><span class="token punctuation">(</span>jsonData<span class="token punctuation">)</span>
+		<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+			log<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+		<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="Gorm-查询操作如下"><a href="#Gorm-查询操作如下" class="headerlink" title="Gorm 查询操作如下"></a>Gorm 查询操作如下</h3><p>从数据库中查询指定条件数据, 查询成功返回一个结构体数组, 没有查询到数据返回 nil</p>
+<p>偏移量为 <code>(pnum-1)*psize</code> 的值, 限制返回条数为 <code>psize</code></p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">GetDataFromDbByPages</span><span class="token punctuation">(</span>psize<span class="token punctuation">,</span> pnum <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>dataList <span class="token operator">*</span><span class="token punctuation">[</span><span class="token punctuation">]</span>UserDataModel<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	result <span class="token operator">:=</span> db<span class="token punctuation">.</span><span class="token function">Offset</span><span class="token punctuation">(</span><span class="token punctuation">(</span>pnum <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> psize<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Limit</span><span class="token punctuation">(</span>psize<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Find</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>dataList<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> result<span class="token punctuation">.</span>RowsAffected <span class="token operator">==</span> <span class="token number">0</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">"获取数据失败"</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span>
+	<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+		<span class="token keyword">return</span> dataList
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="完整后端代码-demo"><a href="#完整后端代码-demo" class="headerlink" title="完整后端代码(demo)"></a>完整后端代码(demo)</h2><pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"encoding/json"</span>
+	<span class="token string">"log"</span>
+	<span class="token string">"net/http"</span>
+	<span class="token string">"strconv"</span>
+
+	<span class="token string">"github.com/glebarez/sqlite"</span>
+	<span class="token string">"gorm.io/gorm"</span>
+<span class="token punctuation">)</span>
+
+<span class="token comment">// 监听本地8848端口, 处理来自 /api/datalist 的请求</span>
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	server <span class="token operator">:=</span> http<span class="token punctuation">.</span>Server<span class="token punctuation">&#123;</span>
+		Addr<span class="token punctuation">:</span> <span class="token string">"127.0.0.1:8848"</span><span class="token punctuation">,</span>
+	<span class="token punctuation">&#125;</span>
+	http<span class="token punctuation">.</span><span class="token function">HandleFunc</span><span class="token punctuation">(</span><span class="token string">"/api/datalist"</span><span class="token punctuation">,</span> DataListApi<span class="token punctuation">)</span>
+	log<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">"Server is runing on http://127.0.0.1:8848"</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">:=</span> server<span class="token punctuation">.</span><span class="token function">ListenAndServe</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// 处理 /api/datalist 请求, 请求需要携带psize和pnum参数</span>
+<span class="token keyword">func</span> <span class="token function">DataListApi</span><span class="token punctuation">(</span>w http<span class="token punctuation">.</span>ResponseWriter<span class="token punctuation">,</span> r <span class="token operator">*</span>http<span class="token punctuation">.</span>Request<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	params <span class="token operator">:=</span> r<span class="token punctuation">.</span>URL<span class="token punctuation">.</span><span class="token function">Query</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	pageSize<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> strconv<span class="token punctuation">.</span><span class="token function">Atoi</span><span class="token punctuation">(</span>params<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span><span class="token string">"psize"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	pageNum<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> strconv<span class="token punctuation">.</span><span class="token function">Atoi</span><span class="token punctuation">(</span>params<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span><span class="token string">"pnum"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	dataList <span class="token operator">:=</span> <span class="token function">GetDataFromDbByPages</span><span class="token punctuation">(</span>pageSize<span class="token punctuation">,</span> pageNum<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> dataList <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		jsonData<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> json<span class="token punctuation">.</span><span class="token function">Marshal</span><span class="token punctuation">(</span>dataList<span class="token punctuation">)</span>
+		<span class="token boolean">_</span><span class="token punctuation">,</span> err <span class="token operator">:=</span> w<span class="token punctuation">.</span><span class="token function">Write</span><span class="token punctuation">(</span>jsonData<span class="token punctuation">)</span>
+		<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+			log<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+		<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// 数据库存储数据的结构体</span>
+<span class="token keyword">type</span> UserDataModel <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+	Id   <span class="token builtin">int</span>    <span class="token string">`gorm:"column:id;type:INTEGER NOT NULL;primaryKey;autoIncrement;"`</span>
+	Name <span class="token builtin">string</span> <span class="token string">`gorm:"column:name;type:TEXT NOT NULL UNIQUE;"`</span>
+	Desc <span class="token builtin">string</span> <span class="token string">`gorm:"column:desc;type:TEXT NOT NULL;"`</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// 自定义表名</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>UserDataModel<span class="token punctuation">)</span> <span class="token function">TableName</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token builtin">string</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">return</span> <span class="token string">"user_data"</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">var</span> db <span class="token operator">*</span>gorm<span class="token punctuation">.</span>DB
+
+<span class="token comment">// 在 main 函数执行前用 init 初始化 sqlite 数据库</span>
+<span class="token keyword">func</span> <span class="token function">init</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">var</span> err <span class="token builtin">error</span>
+	db<span class="token punctuation">,</span> err <span class="token operator">=</span> gorm<span class="token punctuation">.</span><span class="token function">Open</span><span class="token punctuation">(</span>sqlite<span class="token punctuation">.</span><span class="token function">Open</span><span class="token punctuation">(</span><span class="token string">"./data.db"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>gorm<span class="token punctuation">.</span>Config<span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+
+	sqlDB<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> db<span class="token punctuation">.</span><span class="token function">DB</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	sqlDB<span class="token punctuation">.</span><span class="token function">SetMaxOpenConns</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+	<span class="token function">tableInit</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>UserDataModel<span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// 检查表是否存在, 不存在则创建</span>
+<span class="token keyword">func</span> <span class="token function">tableInit</span><span class="token punctuation">(</span>table <span class="token keyword">interface</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">if</span> db<span class="token punctuation">.</span><span class="token function">Migrator</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">HasTable</span><span class="token punctuation">(</span>table<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token keyword">return</span>
+	<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+		db<span class="token punctuation">.</span><span class="token function">Migrator</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">CreateTable</span><span class="token punctuation">(</span>table<span class="token punctuation">)</span>
+		<span class="token function">genTestData</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// 从数据库根据 psize 和 pnum 读取数据</span>
+<span class="token keyword">func</span> <span class="token function">GetDataFromDbByPages</span><span class="token punctuation">(</span>psize<span class="token punctuation">,</span> pnum <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>dataList <span class="token operator">*</span><span class="token punctuation">[</span><span class="token punctuation">]</span>UserDataModel<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	result <span class="token operator">:=</span> db<span class="token punctuation">.</span><span class="token function">Offset</span><span class="token punctuation">(</span><span class="token punctuation">(</span>pnum <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> psize<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Limit</span><span class="token punctuation">(</span>psize<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Find</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>dataList<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> result<span class="token punctuation">.</span>RowsAffected <span class="token operator">==</span> <span class="token number">0</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">"获取数据失败"</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span>
+	<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+		<span class="token keyword">return</span> dataList
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// 生成测试数据 100 条</span>
+<span class="token keyword">func</span> <span class="token function">genTestData</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">for</span> i <span class="token operator">:=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token number">100</span><span class="token punctuation">;</span> i<span class="token operator">++</span> <span class="token punctuation">&#123;</span>
+		testData <span class="token operator">:=</span> UserDataModel<span class="token punctuation">&#123;</span>
+			Id<span class="token punctuation">:</span>   i<span class="token punctuation">,</span>
+			Name<span class="token punctuation">:</span> <span class="token string">"user"</span> <span class="token operator">+</span> strconv<span class="token punctuation">.</span><span class="token function">Itoa</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">,</span>
+			Desc<span class="token punctuation">:</span> <span class="token string">"Hello, I'm user"</span> <span class="token operator">+</span> strconv<span class="token punctuation">.</span><span class="token function">Itoa</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">,</span>
+		<span class="token punctuation">&#125;</span>
+		db<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>testData<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>demo 下载: <a target="_blank" rel="noopener" href="https://yzbtdiy.lanzoul.com/iICXi0pung7c">https://yzbtdiy.lanzoul.com/iICXi0pung7c</a></p>
+<p>初次运行会在当前目生成 sqlite 数据库, 文件名为 <code>data.db</code>,</p>
+<p>然后创建 user_data 表, 插入 100 条测试数据,</p>
+<p>监听 8848端口, 可以访问 <code>/api/datalist</code> 获取数据, 需要传递 <code>psize</code> 和 <code>pnum</code> 两个参数</p>
+<p>可以通过浏览器访问测试, 也可以用命令行测试</p>
+<pre class="line-numbers language-none"><code class="language-none">~ $ curl &quot;http:&#x2F;&#x2F;127.0.0.1:8848&#x2F;api&#x2F;datalist?psize&#x3D;10&amp;pnum&#x3D;1&quot;
+[&#123;&quot;Id&quot;:1,&quot;Name&quot;:&quot;user1&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user1&quot;&#125;,&#123;&quot;Id&quot;:2,&quot;Name&quot;:&quot;user2&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user2&quot;&#125;,&#123;&quot;Id&quot;:3,&quot;Name&quot;:&quot;user3&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user3&quot;&#125;,&#123;&quot;Id&quot;:4,&quot;Name&quot;:&quot;user4&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user4&quot;&#125;,&#123;&quot;Id&quot;:5,&quot;Name&quot;:&quot;user5&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user5&quot;&#125;,&#123;&quot;Id&quot;:6,&quot;Name&quot;:&quot;user6&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user6&quot;&#125;,&#123;&quot;Id&quot;:7,&quot;Name&quot;:&quot;user7&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user7&quot;&#125;,&#123;&quot;Id&quot;:8,&quot;Name&quot;:&quot;user8&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user8&quot;&#125;,&#123;&quot;Id&quot;:9,&quot;Name&quot;:&quot;user9&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user9&quot;&#125;,&#123;&quot;Id&quot;:10,&quot;Name&quot;:&quot;user10&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user10&quot;&#125;]
+
+~ $ curl &quot;http:&#x2F;&#x2F;127.0.0.1:8848&#x2F;api&#x2F;datalist?psize&#x3D;5&amp;pnum&#x3D;3&quot;
+[&#123;&quot;Id&quot;:11,&quot;Name&quot;:&quot;user11&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user11&quot;&#125;,&#123;&quot;Id&quot;:12,&quot;Name&quot;:&quot;user12&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user12&quot;&#125;,&#123;&quot;Id&quot;:13,&quot;Name&quot;:&quot;user13&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user13&quot;&#125;,&#123;&quot;Id&quot;:14,&quot;Name&quot;:&quot;user14&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user14&quot;&#125;,&#123;&quot;Id&quot;:15,&quot;Name&quot;:&quot;user15&quot;,&quot;Desc&quot;:&quot;Hello, I&#39;m user15&quot;&#125;]<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/golang/" rel="tag"># golang</a>
+              <a href="/tags/database/" rel="tag"># database</a>
+              <a href="/tags/pagination/" rel="tag"># pagination</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/security/drone-node.html" rel="prev" title="Node 靶机">
+                  <i class="fa fa-chevron-left"></i> Node 靶机
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/linux/bonding.html" rel="next" title="Linux网卡绑定(聚合)">
+                  Linux网卡绑定(聚合) <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yzbtdiy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/yzbtdiy" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.6.0/pjax.min.js" integrity="sha256-vxLn1tSKWD4dqbMRyv940UYw4sXgMtYcK6reefzZrao=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
