@@ -99,6 +99,40 @@ Status: Downloaded newer image for centos/httpd:latest
 
 [DaoCloud](https://www.daocloud.io/mirror) 镜像加速脚本
 
+### 设置代理
+
+* 使用国内镜像站加速可能遇到某些情况下latest并不是最新版,设置代理从原始镜像站下载可解决此问题
+
+**systemd 配置 proxy**
+
+```shell
+[root@localhost~]# vim /etc/systemd/system/docker.service.d/http-proxy.conf
+[Service]
+Environment="HTTP_PROXY=http://127.0.0.1:10809"
+Environment="HTTPS_PROXY=http://127.0.0.1:10809"
+Environment="NO_PROXY=localhost,127.0.0.1"
+[root@localhost ~]# systemctl daemon-reload
+[root@localhost ~]# systemctl restart docker
+```
+
+**docker 实例配置proxy**(测试未成功)
+
+```shell
+[root@localhost ~]# vim  ~/.docker/config.json
+{
+ "proxies":
+ {
+   "default":
+   {
+     "httpProxy": "http://127.0.0.1:10809",
+     "httpsProxy": "http://127.0.0.1:10809",
+     "noProxy": "127.0.0.0/8,localhost"
+   }
+ }
+}
+[root@localhost ~]# systemctl restart docker
+```
+
 ## 查看本地 images
 
 ```shell
