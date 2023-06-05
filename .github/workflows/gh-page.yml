@@ -3,7 +3,7 @@ name: Deploy Hexo Site
 on:
   push:
     branches:
-      - hexo
+      - main
 
 jobs:
   build-and-deploy:
@@ -32,7 +32,7 @@ jobs:
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
-          personal_token: ${{ secrets.DeploySite }}
-          publish_branch: master
+          personal_token: ${{ secrets.BUILDPAGES }}
+          publish_branch: pages
           publish_dir: ./public
           force_orphan: true
