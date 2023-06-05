@@ -1,12 +1,11 @@
 ---
 title: Golang后端数分页
 date: 2022-09-10 16:14:03
+categories: golang
 tags:
   - golang
   - database
   - pagination
-categories:
-  - golang
 ---
 
 前端对于请求数据条数过多时, 可以考虑数据分页显示, 可以通过两个参数`pageSize`(每页显示的条数) 和`pageNumber`(页数)来进行控制.
